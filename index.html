@@ -4,410 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Análise Bitcoin | Relatório de Mercado</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #1a1a1a;
-            --secondary: #666;
-            --accent: #f7931a;
-            --border: #e5e5e5;
-            --bg: #fafafa;
-            --white: #ffffff;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --radius: 8px;
-            --shadow: 0 1px 3px rgba(0,0,0,0.06);
-            --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
-        }
-
-        [data-theme="dark"] {
-            --primary: #f5f5f5;
-            --secondary: #a1a1a1;
-            --accent: #f7931a;
-            --border: #2a2a2a;
-            --bg: #171717;
-            --white: #1f1f1f;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --shadow: 0 1px 3px rgba(0,0,0,0.3);
-            --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            line-height: 1.6;
-            color: var(--primary);
-            background: var(--bg);
-            font-weight: 400;
-            -webkit-font-smoothing: antialiased;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .theme-toggle {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: var(--shadow);
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .theme-toggle svg {
-            width: 20px;
-            height: 20px;
-            color: var(--primary);
-            transition: all 0.3s ease;
-        }
-
-        [data-theme="dark"] .theme-toggle .sun-icon {
-            display: block;
-        }
-
-        [data-theme="dark"] .theme-toggle .moon-icon {
-            display: none;
-        }
-
-        .theme-toggle .sun-icon {
-            display: none;
-        }
-
-        .theme-toggle .moon-icon {
-            display: block;
-        }
-
-        .container {
-            max-width: 740px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        header {
-            padding: 80px 0 60px;
-            text-align: center;
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .bitcoin-symbol {
-            width: 32px;
-            height: 32px;
-            background: var(--accent);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .subtitle {
-            color: var(--secondary);
-            font-size: 15px;
-            font-weight: 400;
-        }
-
-        main {
-            background: var(--white);
-            padding: 48px 0;
-        }
-
-        .section {
-            margin-bottom: 48px;
-        }
-
-        .section:last-child {
-            margin-bottom: 0;
-        }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 600;
-            line-height: 1.2;
-            margin-bottom: 8px;
-        }
-
-        h2 {
-            font-size: 24px;
-            font-weight: 600;
-            line-height: 1.3;
-            margin-bottom: 20px;
-            color: var(--primary);
-        }
-
-        h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 32px 0 16px 0;
-            color: var(--primary);
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 1.7;
-            margin-bottom: 16px;
-            color: var(--primary);
-        }
-
-        .lead {
-            font-size: 18px;
-            color: var(--secondary);
-            margin-bottom: 32px;
-        }
-
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 48px 0;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 24px;
-            margin: 32px 0;
-        }
-
-        .metric {
-            text-align: center;
-            padding: 24px 16px;
-            background: var(--bg);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-        }
-
-        .metric-value {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 4px;
-        }
-
-        .metric-label {
-            font-size: 13px;
-            color: var(--secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
-        }
-
-        .chart-container {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 48px 24px;
-            text-align: center;
-            margin: 32px 0;
-            color: var(--secondary);
-        }
-
-        .chart-placeholder {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .recommendation {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 32px;
-            margin: 32px 0;
-            text-align: center;
-        }
-
-        .rec-badge {
-            display: inline-block;
-            background: var(--success);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 20px;
-        }
-
-        .rec-badge.hold {
-            background: var(--warning);
-        }
-
-        .highlight {
-            background: var(--bg);
-            border-left: 3px solid var(--accent);
-            padding: 20px 24px;
-            margin: 24px 0;
-            border-radius: 0 var(--radius) var(--radius) 0;
-        }
-
-        .highlight p {
-            margin: 0;
-        }
-
-        .alert {
-            background: var(--bg);
-            border: 1px solid var(--danger);
-            border-left: 3px solid var(--danger);
-            padding: 16px 20px;
-            border-radius: 0 var(--radius) var(--radius) 0;
-            margin: 24px 0;
-        }
-
-        [data-theme="dark"] .alert {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .alert p {
-            color: var(--danger);
-            font-size: 14px;
-            font-weight: 500;
-            margin: 0;
-        }
-
-        .section-number {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            background: var(--accent);
-            color: white;
-            border-radius: 50%;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            line-height: 24px;
-            margin-right: 12px;
-            vertical-align: middle;
-        }
-
-        footer {
-            background: var(--bg);
-            border-top: 1px solid var(--border);
-            padding: 32px 0;
-            text-align: center;
-        }
-
-        footer p {
-            color: var(--secondary);
-            font-size: 14px;
-            margin: 0;
-        }
-
-        @media (max-width: 768px) {
-            header {
-                padding: 60px 0 40px;
-            }
-            
-            .container {
-                padding: 0 20px;
-            }
-            
-            h1 {
-                font-size: 28px;
-            }
-            
-            h2 {
-                font-size: 20px;
-            }
-            
-            main {
-                padding: 32px 0;
-            }
-            
-            .section {
-                margin-bottom: 40px;
-            }
-            
-            .divider {
-                margin: 32px 0;
-            }
-            
-            .metrics-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
-                margin: 24px 0;
-            }
-            
-            .metric {
-                padding: 20px 12px;
-            }
-            
-            .metric-value {
-                font-size: 20px;
-            }
-            
-            .chart-container {
-                padding: 32px 16px;
-            }
-            
-            .chart-placeholder {
-                font-size: 36px;
-            }
-            
-            .recommendation {
-                padding: 24px;
-            }
-            
-            .highlight {
-                padding: 16px 20px;
-            }
-        }
-
-        /* Subtle animations */
-        .metric {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .metric:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeIn 0.6s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
@@ -416,78 +14,90 @@
                 <span class="bitcoin-symbol">₿</span>
                 Análise Bitcoin
             </div>
-            <p class="subtitle">Relatório de Mercado • 03-09 Agosto 2025</p>
+            <p class="subtitle">Relatório Profissional de Mercado • 03-09 Agosto 2025</p>
         </div>
-        
-        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar tema">
-            <svg class="sun-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <svg class="moon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-        </button>
     </header>
 
     <main>
         <div class="container">
-            <section class="section fade-in">
-                <h2><span class="section-number">1</span>Resumo Executivo</h2>
-                <p class="lead">O Bitcoin mantém-se em período de consolidação com expectativas mistas para o curto prazo e otimismo moderado para o médio-longo prazo.</p>
-                
-                <div class="metrics-grid">
-                    <div class="metric">
-                        <div class="metric-value">$140k</div>
-                        <div class="metric-label">Meta 2025</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">$115k</div>
-                        <div class="metric-label">Resistência</div>
-                    </div>
+            <div class="hero-stats fade-in">
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value">$140k</div>
+                    <div class="stat-label">Meta 2025</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🛡️</div>
+                    <div class="stat-value">$115k</div>
+                    <div class="stat-label">Resistência</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">Neutro</div>
+                    <div class="stat-label">Sentimento</div>
+                </div>
+            </div>
 
-                <p>As últimas análises indicam um Bitcoin em fase de consolidação, com o mercado aguardando catalisadores para definir a próxima direção. O interesse institucional permanece elevado, e desenvolvimentos regulatórios podem ser determinantes para o movimento futuro.</p>
+            <section class="section fade-in">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <h2>Resumo Executivo</h2>
+                </div>
                 
-                <div class="highlight">
-                    <p><strong>Ponto de atenção:</strong> A resistência em US$ 115-120k representa um nível crítico. O rompimento deste patamar pode confirmar tendência de alta mais consistente.</p>
+                <div class="content-card">
+                    <p class="lead-text">O Bitcoin mantém-se em período de consolidação estratégica com expectativas mistas para o curto prazo e otimismo fundamentado para o médio-longo prazo.</p>
+                    
+                    <p>As últimas análises de mercado indicam um Bitcoin em fase de consolidação técnica, com o mercado aguardando catalisadores macroeconômicos para definir a próxima direção. O interesse institucional permanece elevado, e desenvolvimentos regulatórios podem ser determinantes para o movimento futuro dos preços.</p>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Ponto de atenção crítico:</strong> A resistência técnica em US$ 115-120k representa um nível decisivo. O rompimento sustentado deste patamar pode confirmar uma tendência de alta mais consistente e abrir caminho para a meta de $140k.</p>
+                    </div>
                 </div>
             </section>
 
-            <div class="divider"></div>
-
             <section class="section fade-in">
-                <h2><span class="section-number">2</span>Análise Técnica</h2>
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <h2>Análise Técnica Avançada</h2>
+                </div>
                 
-                <div class="chart-container">
-                    <div class="chart-placeholder">📈</div>
-                    <p><strong>Gráfico Semanal BTC/USD</strong></p>
-                    <p>Período: 03/08/2025 - 09/08/2025</p>
+                <div class="chart-section">
+                    <div class="chart-visual">
+                        <div class="chart-icon">📈</div>
+                    </div>
+                    <h3 style="font-size: 24px; margin-bottom: 16px;">Gráfico Semanal BTC/USD</h3>
+                    <p style="color: var(--secondary); margin: 0;">Período de Análise: 03/08/2025 - 09/08/2025</p>
                 </div>
 
-                <p>O movimento de preços da última semana reflete a consolidação atual do mercado. O aumento do poder de processamento da rede indica saúde técnica subjacente, enquanto o Índice de Medo & Ganância sugere equilíbrio entre otimismo e cautela.</p>
+                <div class="content-card">
+                    <p>O movimento de preços da última semana reflete perfeitamente a consolidação atual do mercado. O aumento consistente do poder de processamento da rede (hashrate) indica saúde técnica robusta subjacente, enquanto o Índice de Medo & Ganância sugere um equilíbrio saudável entre otimismo e cautela prudente.</p>
 
-                <p>As previsões baseadas em análise de Elliott Wave apontam para potencial de valorização significativa até final de 2025, embora 2026 possa apresentar cenário mais desafiador conforme ciclos históricos do Bitcoin.</p>
+                    <p>As previsões baseadas em análise técnica de Elliott Wave apontam para potencial de valorização significativa até o final de 2025, embora 2026 possa apresentar um cenário mais desafiador, seguindo os ciclos históricos característicos do Bitcoin.</p>
+                </div>
             </section>
 
-            <div class="divider"></div>
-
             <section class="section fade-in">
-                <h2><span class="section-number">3</span>Recomendação</h2>
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <h2>Recomendações Estratégicas</h2>
+                </div>
                 
-                <div class="recommendation">
-                    <div class="rec-badge hold">Manter</div>
-                    <h3>Estratégia Atual</h3>
-                    <p>Para investidores posicionados: manter exposição atual. O momento de indefinição não justifica movimentos abruptos, e o potencial de médio prazo permanece atrativo.</p>
+                <div class="recommendation-grid">
+                    <div class="recommendation-card primary">
+                        <div class="rec-badge hold">Manter Posição</div>
+                        <h3 style="margin-bottom: 24px; font-size: 24px;">Para Investidores Atuais</h3>
+                        <p>Manter a exposição atual ao Bitcoin. O momento de indefinição técnica não justifica movimentos abruptos, e o potencial de valorização no médio prazo permanece altamente atrativo baseado em fundamentos sólidos.</p>
+                    </div>
+
+                    <div class="recommendation-card success">
+                        <div class="rec-badge buy">Entrada Gradual</div>
+                        <h3 style="margin-bottom: 24px; font-size: 24px;">Para Novos Investidores</h3>
+                        <p>Pequenas aquisições regulares (como R$ 100-500) são altamente recomendadas para iniciar posição ou implementar estratégia DCA (Dollar-Cost Averaging), aproveitando o período de consolidação favorável.</p>
+                    </div>
                 </div>
 
-                <h3>Para Novos Investidores</h3>
-                <div class="recommendation">
-                    <div class="rec-badge">Entrada Gradual</div>
-                    <p>Pequenas aquisições (como R$ 100) são recomendadas para iniciar posição ou implementar estratégia DCA (Dollar-Cost Averaging), aproveitando o período de consolidação.</p>
-                </div>
-
-                <div class="alert">
-                    <p><strong>Aviso:</strong> Investimentos em criptomoedas envolvem riscos significativos. Invista apenas recursos que pode permitir-se perder. Este relatório não constitui aconselhamento financeiro personalizado.</p>
+                <div class="alert-banner">
+                    <p><strong>Aviso Legal Importante:</strong> Investimentos em criptomoedas envolvem riscos significativos de mercado. Invista apenas recursos financeiros que você pode permitir-se perder completamente. Este relatório constitui análise educacional e não representa aconselhamento financeiro personalizado.</p>
                 </div>
             </section>
         </div>
@@ -495,54 +105,10 @@
 
     <footer>
         <div class="container">
-            <p>Relatório para fins educacionais • Não constitui recomendação de investimento</p>
+            <p>© 2025 Bitcoin Analysis • Relatório profissional para fins educacionais • Não constitui recomendação de investimento</p>
         </div>
     </footer>
 
-    <script>
-        // Theme toggle functionality
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
-        // Load saved theme
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-            } else if (systemPrefersDark) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        }
-
-        // Initialize theme on page load
-        loadTheme();
-
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addListener((e) => {
-            if (!localStorage.getItem('theme')) {
-                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-            }
-        });
-
-        // Animação suave de entrada
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.style.animationDelay = '0.1s';
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.fade-in').forEach((el) => {
-            observer.observe(el);
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
