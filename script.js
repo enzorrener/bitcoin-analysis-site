@@ -1,4 +1,3 @@
-// Enhanced scroll animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -68,3 +67,20 @@ const heroStats = document.querySelector('.hero-stats');
 if (heroStats) {
     statsObserver.observe(heroStats);
 }
+
+// Header hide/show on scroll
+let lastScrollTop = 0;
+const header = document.querySelector('.top-header');
+
+window.addEventListener('scroll', function() {
+    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScroll > lastScrollTop) {
+        // Scroll down
+        header.style.transform = 'translateY(-100%)';
+    } else {
+        // Scroll up
+        header.style.transform = 'translateY(0)';
+    }
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // For Mobile or negative scrolling
+});
