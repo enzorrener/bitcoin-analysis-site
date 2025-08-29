@@ -14,17 +14,8 @@
             <nav class="top-nav">
                 <div class="nav-brand">
                     <div class="brand-icon">₿</div>
-                    <span class="brand-text">CryptoAnalysis Pro</span>
+                    <span class="brand-text">CryptoAnalysis</span>
                 </div>
-                
-                <div class="nav-links">
-                    <a href="#" class="nav-link active">Dashboard</a>
-                    <a href="#" class="nav-link">Relatórios</a>
-                    <a href="#" class="nav-link">Análises</a>
-                    <a href="#" class="nav-link">Mercado</a>
-                    <a href="#" class="nav-link">Portfólio</a>
-                </div>
-                
                 <div class="market-ticker">
                     <div class="ticker-item">
                         <span class="ticker-symbol">BTC</span>
@@ -43,6 +34,15 @@
                         <span class="ticker-change positive">+3.1%</span>
                     </div>
                 </div>
+                
+                <div class="nav-links">
+                    <a href="#" class="nav-link active">Dashboard</a>
+                    <a href="#" class="nav-link">Relatórios</a>
+                    <a href="#analise-tecnica" class="nav-link" id="analises-link">Análises</a>
+                    <a href="#estrategia" class="nav-link" id="estrategia-link">Estratégia</a>
+                    <a href="#" class="nav-link">Portfólio</a>
+                </div>
+                
 
                 <div class="nav-actions">
                     <button class="action-btn notifications">
@@ -107,13 +107,13 @@
                 </div>
             </section>
 
-            <section class="section fade-in">
+            <section class="section fade-in" id="analise-tecnica">
                 <div class="section-header">
                     <div class="section-number">2</div>
                     <h2>Análise Técnica Avançada</h2>
                 </div>
                 
-                <div class="chart-section">
+                <div class="chart-section" id="grafico-bitcoin">
                     <div class="chart-visual">
                         <div class="chart-icon">
                             <img src="bitcoin_weekly_chart.png" alt="Gráfico Semanal BTC/USD" style="max-width: 100%; height: auto;">
@@ -130,180 +130,13 @@
                 </div>
             </section>
 
-            <section class="section fade-in">
+            <section class="section fade-in" id="estrategia">
                 <div class="section-header">
                     <div class="section-number">3</div>
                     <h2>Recomendações Estratégicas</h2>
                 </div>
                 
-                <div class="recommendation-grid">
-                    <div class="recommendation-card primary">
-                        <div class="rec-badge hold">Manter Posição</div>
-                        <h3 style="margin-bottom: 24px; font-size: 24px;">Para Investidores Atuais</h3>
-                        <p>Manter a exposição atual ao Bitcoin. O momento de indefinição técnica não justifica movimentos abruptos, e o potencial de valorização no médio prazo permanece altamente atrativo baseado em fundamentos sólidos.</p>
-                    </div>
-
-                    <div class="recommendation-card success">
-                        <div class="rec-badge buy">Entrada Gradual</div>
-                        <h3 style="margin-bottom: 24px; font-size: 24px;">Para Novos Investidores</h3>
-                        <p>Pequenas aquisições regulares (como R$ 100-500) são altamente recomendadas para iniciar posição ou implementar estratégia DCA (Dollar-Cost Averaging), aproveitando o período de consolidação favorável.</p>
-                    </div>
-                </div>
-
-                <div class="alert-banner">
-                    <p><strong>Aviso Legal Importante:</strong> Investimentos em criptomoedas envolvem riscos significativos de mercado. Invista apenas recursos financeiros que você pode permitir-se perder completamente. Este relatório constitui análise educacional e não representa aconselhamento financeiro personalizado.</p>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>© 2025 Bitcoin Analysis • Relatório profissional para fins educacionais • Não constitui recomendação de investimento</p>
-        </div>
-    </footer>
-
-    <script src="script.js"></script>
-</body>
-</html><!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análise Bitcoin | Relatório de Mercado</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <!-- Top Navigation Header -->
-    <div class="top-header">
-        <div class="container">
-            <nav class="top-nav">
-                <div class="nav-brand">
-                    <div class="brand-icon">₿</div>
-                    <span class="brand-text">CryptoAnalysis Pro</span>
-                </div>
-                
-                <div class="nav-links">
-                    <a href="#" class="nav-link active">Dashboard</a>
-                    <a href="#" class="nav-link">Relatórios</a>
-                    <a href="#" class="nav-link">Análises</a>
-                    <a href="#" class="nav-link">Mercado</a>
-                    <a href="#" class="nav-link">Portfólio</a>
-                </div>
-                
-                <div class="market-ticker">
-                    <div class="ticker-item">
-                        <span class="ticker-symbol">BTC</span>
-                        <span class="ticker-price">$118,240</span>
-                        <span class="ticker-change positive">+2.4%</span>
-                    </div>
-                    <div class="ticker-separator">|</div>
-                    <div class="ticker-item">
-                        <span class="ticker-symbol">ETH</span>
-                        <span class="ticker-price">$4,127</span>
-                        <span class="ticker-change positive">+1.8%</span>
-                    </div>
-                    <div class="ticker-separator">|</div>
-                    <div class="ticker-item">
-                        <span class="ticker-symbol">Market</span>
-                        <span class="ticker-change positive">+3.1%</span>
-                    </div>
-                </div>
-
-                <div class="nav-actions">
-                    <button class="action-btn notifications">
-                        <span class="notification-icon">🔔</span>
-                        <span class="notification-badge">3</span>
-                    </button>
-                    <button class="action-btn settings">⚙️</button>
-                    <div class="user-profile">
-                        <div class="avatar">👤</div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </div>
-
-    <!-- Original Header -->
-    <header>
-        <div class="container">
-            <div class="logo">
-                <span class="bitcoin-symbol">₿</span>
-                Análise Bitcoin
-            </div>
-            <p class="subtitle">Relatório Profissional de Mercado • 24/08 Agosto 2025</p>
-        </div>
-    </header>
-
-    <main>
-        <div class="container">
-            <div class="hero-stats fade-in">
-                <div class="stat-card">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-value">$140k</div>
-                    <div class="stat-label">Meta 2025</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🛡️</div>
-                    <div class="stat-value">$115k</div>
-                    <div class="stat-label">Resistência</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-value">Alta</div>
-                    <div class="stat-label">Sentimento</div>
-                </div>
-            </div>
-
-            <section class="section fade-in">
-                <div class="section-header">
-                    <div class="section-number">1</div>
-                    <h2>Resumo Executivo</h2>
-                </div>
-                
-                <div class="content-card">
-                    <p class="lead-text">Com base nas notícias recentes, o Bitcoin tem demonstrado um forte otimismo no mercado, impulsionado principalmente pela expectativa de cortes de juros nos EUA e pela crescente adoção por grandes empresas. O BTC atingiu um novo recorde histórico, superando a marca de US$ 124 mil. No entanto, houve uma leve correção, com o preço caindo para cerca de US$ 118 mil após atingir a máxima histórica.</p>
-                    
-                    <p>O mercado de criptomoedas como um todo também está em alta, com um aumento significativo no valor de mercado, impulsionado por dados positivos do Índice de Preços ao Consumidor (IPC) dos EUA. Isso sugere que a inflação pode estar
-                        sob controle, o que geralmente é visto como um sinal positivo para ativos de risco como as criptomoedas.</p>
-                    
-                    <div class="highlight-box">
-                        <p><strong>Ponto de atenção crítico:</strong> A volatilidade é uma característica inerente ao mercado de criptomoedas, e correções podem ocorrer a qualquer momento. É crucial observar os próximos movimentos do mercado e as notícias macroeconômicas.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="section fade-in">
-                <div class="section-header">
-                    <div class="section-number">2</div>
-                    <h2>Análise Técnica Avançada</h2>
-                </div>
-                
-                <div class="chart-section">
-                    <div class="chart-visual">
-                        <div class="chart-icon">
-                            <img src="bitcoin_weekly_chart.png" alt="Gráfico Semanal BTC/USD" style="max-width: 100%; height: auto;">
-                        </div>
-                    </div>
-                    <h3 style="font-size: 24px; margin-bottom: 16px;">Gráfico Semanal BTC/USD</h3>
-                    <p style="color: var(--secondary); margin: 0;">Período de Análise: 03/08/2025 - 09/08/2025</p>
-                </div>
-
-                <div class="content-card">
-                    <p>O movimento de preços da última semana reflete perfeitamente a consolidação atual do mercado. O aumento consistente do poder de processamento da rede (hashrate) indica saúde técnica robusta subjacente, enquanto o Índice de Medo & Ganância sugere um equilíbrio saudável entre otimismo e cautela prudente.</p>
-
-                    <p>As previsões baseadas em análise técnica de Elliott Wave apontam para potencial de valorização significativa até o final de 2025, embora 2026 possa apresentar um cenário mais desafiador, seguindo os ciclos históricos característicos do Bitcoin.</p>
-                </div>
-            </section>
-
-            <section class="section fade-in">
-                <div class="section-header">
-                    <div class="section-number">3</div>
-                    <h2>Recomendações Estratégicas</h2>
-                </div>
-                
-                <div class="recommendation-grid">
+                <div class="recommendation-grid" id="estrategias">
                     <div class="recommendation-card primary">
                         <div class="rec-badge hold">Manter Posição</div>
                         <h3 style="margin-bottom: 24px; font-size: 24px;">Para Investidores Atuais</h3>

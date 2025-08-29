@@ -64,8 +64,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 24px;
-    flex-wrap: wrap;
+    gap: 20px;
+    flex-wrap: nowrap;
 }
 
 .nav-brand {
@@ -590,6 +590,22 @@ footer p {
 @media (max-width: 968px) {
     .container {
         padding: 0 20px;
+    }
+    
+    .top-nav {
+        gap: 12px;
+    }
+    
+    .market-ticker {
+        gap: 8px;
+    }
+    
+    .nav-links {
+        gap: 6px;
+    }
+    
+    .ticker-separator {
+        display: none;
     }
     
     header {
