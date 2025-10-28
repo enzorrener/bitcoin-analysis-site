@@ -1,0 +1,83 @@
+:root {
+  --primary: #f5f5f5;
+  --secondary: #a1a1a1;
+  --accent: #f7931a;
+  --accent-light: #ffb84d;
+  --border: #2a2a2a;
+  --bg: #0f0f0f;
+  --white: #1a1a1a;
+  --success: #22c55e;
+  --success-light: #16a34a;
+  --warning: #f59e0b;
+  --warning-light: #d97706;
+  --danger: #ef4444;
+  --danger-light: #dc2626;
+  --info: #3b82f6;
+  --info-light: #2563eb;
+  --radius: 16px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --gradient-primary: linear-gradient(135deg, #f7931a 0%, #ffb84d 100%);
+  --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: var(--primary);
+  background: var(--gradient-bg);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  transition: all 0.4s ease;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.fade-in:nth-child(2) { animation-delay: 0.1s; }
+.fade-in:nth-child(3) { animation-delay: 0.2s; }
+.fade-in:nth-child(4) { animation-delay: 0.3s; }
+
+@media (max-width: 968px) {
+  .container {
+    padding: 0 20px;
+  }
+}

@@ -1,0 +1,22 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 80px 0;
+  margin: 40px 0;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  flex: 1;
+}
+
+@media (max-width: 968px) {
+  .main-content {
+    padding: 40px 0;
+    margin: 20px 0;
+  }
+}

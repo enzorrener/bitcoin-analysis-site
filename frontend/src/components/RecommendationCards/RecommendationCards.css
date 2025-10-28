@@ -1,0 +1,101 @@
+.recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 40px;
+  margin: 60px 0;
+}
+
+.recommendation-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 48px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.recommendation-card.primary {
+  border-color: var(--warning);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(252, 211, 77, 0.05));
+}
+
+.recommendation-card.success {
+  border-color: var(--success);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(134, 239, 172, 0.05));
+}
+
+.recommendation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.rec-badge {
+  display: inline-block;
+  padding: 16px 32px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow);
+}
+
+.rec-badge.hold {
+  background: linear-gradient(135deg, var(--warning), var(--warning-light));
+  color: white;
+}
+
+.rec-badge.buy {
+  background: linear-gradient(135deg, var(--success), var(--success-light));
+  color: white;
+}
+
+.recommendation-card h3 {
+  margin-bottom: 24px;
+  font-size: 24px;
+  color: var(--primary);
+}
+
+.recommendation-card p {
+  color: var(--primary);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.alert-banner {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(252, 165, 165, 0.1));
+  border: 2px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin: 40px 0;
+  position: relative;
+}
+
+.alert-banner::before {
+  content: '⚠️';
+  font-size: 32px;
+  position: absolute;
+  top: 24px;
+  left: 24px;
+}
+
+.alert-banner p {
+  color: var(--danger);
+  font-weight: 600;
+  margin-left: 60px;
+  font-size: 16px;
+}
+
+@media (max-width: 968px) {
+  .recommendation-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .recommendation-card {
+    padding: 32px;
+  }
+}

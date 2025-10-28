@@ -102,7 +102,6 @@ function scrollToChart() {
     for (let target of targets) {
         if (target) {
             targetElement = target;
-            console.log('Elemento encontrado:', target.className || target.id);
             break;
         }
     }
@@ -115,9 +114,7 @@ function scrollToChart() {
         
         // Posição final: topo do elemento - altura do header - margem extra
         const targetPosition = rect.top + scrollTop - headerHeight - 30;
-        
-        console.log('Scrolling para posição:', targetPosition);
-        
+                
         window.scrollTo({
             top: targetPosition,
             behavior: 'smooth'
@@ -140,9 +137,7 @@ function scrollToChart() {
     }
 }
 
-function scrollToStrategy() {
-    console.log('Tentando ir para estratégias...');
-    
+function scrollToStrategy() {    
     const targets = [
         document.getElementById('estrategias'),
         document.querySelector('.recommendation-grid'),
@@ -167,9 +162,7 @@ function scrollToStrategy() {
         
         // Mesma lógica suave do gráfico
         const targetPosition = rect.top + scrollTop - headerHeight - 30;
-        
-        console.log('Scrolling suave para estratégias:', targetPosition);
-        
+                
         window.scrollTo({
             top: targetPosition,
             behavior: 'smooth'
@@ -194,32 +187,25 @@ function scrollToStrategy() {
 
 // Navegação para o gráfico
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM carregado');
     
     setTimeout(() => {
         const analysisLinks = document.querySelectorAll('.nav-link');
-        console.log('Links encontrados:', analysisLinks.length);
         
         analysisLinks.forEach((link, index) => {
             const linkText = link.textContent.trim();
-            console.log(`Link ${index}:`, linkText);
             
             // Link para Análises
             if (linkText === 'Análises') {
-                console.log('Link "Análises" encontrado!');
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
-                    console.log('Clicou em Análises!');
                     scrollToChart();
                 });
             }
             
             // Link para Estratégia - AGORA COM SCROLL SUAVE
             if (linkText === 'Estratégia') {
-                console.log('Link "Estratégia" encontrado!');
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
-                    console.log('Clicou em Estratégia!');
                     scrollToStrategy();
                 });
             }
@@ -240,3 +226,29 @@ document.addEventListener('DOMContentLoaded', function() {
 // Função de backup que pode ser chamada diretamente
 window.scrollToChart = scrollToChart;
 window.scrollToStrategy = scrollToStrategy;
+
+// Atualiza a data do relatório automaticamente
+function updateReportDate() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+
+    const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+
+    const monthName = monthNames[now.getMonth()];
+    const dateText = `Relatório Profissional de Mercado • ${day}/${month} ${monthName} ${year}`;
+
+    const subtitle = document.querySelector('.subtitle');
+    if (subtitle) {
+        subtitle.textContent = dateText;
+    }
+}
+
+// Executa quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    updateReportDate();
+});
