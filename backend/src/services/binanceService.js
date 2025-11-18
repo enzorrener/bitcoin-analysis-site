@@ -86,6 +86,84 @@ export const getPriceHistory = async (interval = '1h', limit = 168) => {
 };
 
 /**
+ * Busca o preço atual do Ethereum em USD
+ * @returns {Promise<Object>} Dados do preço atual do ETH
+ */
+export const getEthereumPrice = async () => {
+  const cacheKey = 'eth_current_price';
+
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return cachedData;
+  }
+
+  try {
+    const response = await axios.get(`${BINANCE_API}/ticker/24hr`, {
+      params: { symbol: 'ETHUSDT' }
+    });
+
+    const data = {
+      symbol: 'ETH/USD',
+      price: parseFloat(response.data.lastPrice),
+      change24h: parseFloat(response.data.priceChangePercent),
+      high24h: parseFloat(response.data.highPrice),
+      low24h: parseFloat(response.data.lowPrice),
+      volume24h: parseFloat(response.data.volume),
+      timestamp: Date.now()
+    };
+
+    cache.set(cacheKey, data);
+    return data;
+  } catch (error) {
+    console.error('Erro ao buscar preço do ETH na Binance:', error.message);
+    throw new Error('Falha ao obter dados do ETH da Binance');
+  }
+};
+
+/**
+ * Busca dados gerais do mercado (média de mudança)
+ * @returns {Promise<Object>} Dados do mercado geral
+ */
+export const getMarketOverview = async () => {
+  const cacheKey = 'market_overview';
+
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return cachedData;
+  }
+
+  try {
+    // Buscar top 10 moedas para calcular média do mercado
+    const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'];
+
+    const requests = symbols.map(symbol =>
+      axios.get(`${BINANCE_API}/ticker/24hr`, { params: { symbol } })
+    );
+
+    const responses = await Promise.all(requests);
+
+    // Calcular média de mudança ponderada
+    let totalChange = 0;
+    responses.forEach(response => {
+      totalChange += parseFloat(response.data.priceChangePercent);
+    });
+
+    const averageChange = totalChange / responses.length;
+
+    const data = {
+      change24h: averageChange,
+      timestamp: Date.now()
+    };
+
+    cache.set(cacheKey, data);
+    return data;
+  } catch (error) {
+    console.error('Erro ao buscar dados do mercado:', error.message);
+    throw new Error('Falha ao obter dados gerais do mercado');
+  }
+};
+
+/**
  * Converte período solicitado em intervalo da Binance
  * @param {number} days - Número de dias
  * @returns {Object} Configuração de intervalo e limite

@@ -248,7 +248,82 @@ function updateReportDate() {
     }
 }
 
+// Função para formatar valor em dólar
+function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(value);
+}
+
+// Função para formatar percentual
+function formatPercentage(value) {
+    const sign = value >= 0 ? '+' : '';
+    return `${sign}${value.toFixed(1)}%`;
+}
+
+// Atualizar dados do ticker no header
+async function updateMarketTicker() {
+    const API_URL = 'http://localhost:5000/api';
+
+    try {
+        // Buscar dados em paralelo
+        const [btcRes, ethRes, marketRes] = await Promise.all([
+            fetch(`${API_URL}/bitcoin/price`),
+            fetch(`${API_URL}/bitcoin/ethereum`),
+            fetch(`${API_URL}/bitcoin/market`)
+        ]);
+
+        const btcData = await btcRes.json();
+        const ethData = await ethRes.json();
+        const marketData = await marketRes.json();
+
+        // Atualizar BTC
+        if (btcData.success) {
+            const btcPriceEl = document.querySelector('.ticker-item:nth-child(1) .ticker-price');
+            const btcChangeEl = document.querySelector('.ticker-item:nth-child(1) .ticker-change');
+
+            if (btcPriceEl) btcPriceEl.textContent = formatCurrency(btcData.data.price);
+            if (btcChangeEl) {
+                btcChangeEl.textContent = formatPercentage(btcData.data.change24h);
+                btcChangeEl.className = `ticker-change ${btcData.data.change24h >= 0 ? 'positive' : 'negative'}`;
+            }
+        }
+
+        // Atualizar ETH
+        if (ethData.success) {
+            const ethPriceEl = document.querySelector('.ticker-item:nth-child(3) .ticker-price');
+            const ethChangeEl = document.querySelector('.ticker-item:nth-child(3) .ticker-change');
+
+            if (ethPriceEl) ethPriceEl.textContent = formatCurrency(ethData.data.price);
+            if (ethChangeEl) {
+                ethChangeEl.textContent = formatPercentage(ethData.data.change24h);
+                ethChangeEl.className = `ticker-change ${ethData.data.change24h >= 0 ? 'positive' : 'negative'}`;
+            }
+        }
+
+        // Atualizar Market
+        if (marketData.success) {
+            const marketChangeEl = document.querySelector('.ticker-item:nth-child(5) .ticker-change');
+
+            if (marketChangeEl) {
+                marketChangeEl.textContent = formatPercentage(marketData.data.change24h);
+                marketChangeEl.className = `ticker-change ${marketData.data.change24h >= 0 ? 'positive' : 'negative'}`;
+            }
+        }
+
+    } catch (error) {
+        console.error('Erro ao atualizar ticker:', error);
+    }
+}
+
 // Executa quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
     updateReportDate();
+    updateMarketTicker();
+
+    // Atualizar ticker a cada 30 segundos
+    setInterval(updateMarketTicker, 30000);
 });

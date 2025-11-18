@@ -1,28 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentPrice } from '../../services/api';
+import { getCurrentPrice, getEthereumPrice, getMarketOverview } from '../../services/api';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
 import './TopHeader.css';
 
 const TopHeader = () => {
   const [bitcoinData, setBitcoinData] = useState(null);
+  const [ethereumData, setEthereumData] = useState(null);
+  const [marketData, setMarketData] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Buscar dados do Bitcoin a cada 30 segundos
+  // Buscar dados de todas as moedas a cada 30 segundos
   useEffect(() => {
-    const fetchBitcoinData = async () => {
+    const fetchMarketData = async () => {
       try {
-        const response = await getCurrentPrice();
-        if (response.success) {
-          setBitcoinData(response.data);
+        // Buscar BTC, ETH e Market em paralelo
+        const [btcResponse, ethResponse, marketResponse] = await Promise.all([
+          getCurrentPrice(),
+          getEthereumPrice(),
+          getMarketOverview()
+        ]);
+
+        if (btcResponse.success) {
+          setBitcoinData(btcResponse.data);
+        }
+        if (ethResponse.success) {
+          setEthereumData(ethResponse.data);
+        }
+        if (marketResponse.success) {
+          setMarketData(marketResponse.data);
         }
       } catch (error) {
-        console.error('Erro ao buscar preço:', error);
+        console.error('Erro ao buscar dados do mercado:', error);
       }
     };
 
-    fetchBitcoinData();
-    const interval = setInterval(fetchBitcoinData, 30000);
+    fetchMarketData();
+    const interval = setInterval(fetchMarketData, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -64,7 +78,7 @@ const TopHeader = () => {
         <nav className="top-nav">
           <div className="nav-brand">
             <div className="brand-icon">₿</div>
-            <span className="brand-text">ANALISE BITCONIS</span>
+            <span className="brand-text">CryptoAnalysis</span>
           </div>
 
           <div className="market-ticker">
@@ -80,13 +94,19 @@ const TopHeader = () => {
             <div className="ticker-separator">|</div>
             <div className="ticker-item">
               <span className="ticker-symbol">ETH</span>
-              <span className="ticker-price">$4,127</span>
-              <span className="ticker-change positive">+1.8%</span>
+              <span className="ticker-price">
+                {ethereumData ? formatCurrency(ethereumData.price) : 'Loading...'}
+              </span>
+              <span className={`ticker-change ${ethereumData?.change24h >= 0 ? 'positive' : 'negative'}`}>
+                {ethereumData ? formatPercentage(ethereumData.change24h) : '...'}
+              </span>
             </div>
             <div className="ticker-separator">|</div>
             <div className="ticker-item">
               <span className="ticker-symbol">Market</span>
-              <span className="ticker-change positive">+3.1%</span>
+              <span className={`ticker-change ${marketData?.change24h >= 0 ? 'positive' : 'negative'}`}>
+                {marketData ? formatPercentage(marketData.change24h) : '...'}
+              </span>
             </div>
           </div>
 

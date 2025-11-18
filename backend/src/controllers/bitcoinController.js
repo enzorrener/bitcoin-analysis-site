@@ -83,6 +83,44 @@ export const getMarketStats = async (req, res) => {
 };
 
 /**
+ * Controller: Retorna preço atual do Ethereum
+ */
+export const getEthereumPrice = async (req, res) => {
+  try {
+    const data = await binanceService.getEthereumPrice();
+    res.json({
+      success: true,
+      data: data
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar preço do Ethereum',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Controller: Retorna dados gerais do mercado
+ */
+export const getMarketOverview = async (req, res) => {
+  try {
+    const data = await binanceService.getMarketOverview();
+    res.json({
+      success: true,
+      data: data
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar dados do mercado',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Controller: Health check da API
  */
 export const healthCheck = (req, res) => {
