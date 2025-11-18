@@ -64,7 +64,7 @@ const TopHeader = () => {
         <nav className="top-nav">
           <div className="nav-brand">
             <div className="brand-icon">₿</div>
-            <span className="brand-text">CryptoAnalysis</span>
+            <span className="brand-text">ANALISE BITCONIS</span>
           </div>
 
           <div className="market-ticker">
