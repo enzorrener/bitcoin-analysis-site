@@ -76,4 +76,30 @@ export const getMarketStats = async () => {
   }
 };
 
+/**
+ * Serviço: Buscar preço atual do Ethereum
+ */
+export const getEthereumPrice = async () => {
+  try {
+    const response = await api.get('/bitcoin/ethereum');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar preço do Ethereum:', error);
+    throw error;
+  }
+};
+
+/**
+ * Serviço: Buscar dados gerais do mercado
+ */
+export const getMarketOverview = async () => {
+  try {
+    const response = await api.get('/bitcoin/market');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar overview do mercado:', error);
+    throw error;
+  }
+};
+
 export default api;

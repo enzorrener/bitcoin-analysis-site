@@ -26,6 +26,20 @@ router.get('/history', bitcoinController.getPriceHistory);
 router.get('/stats', bitcoinController.getMarketStats);
 
 /**
+ * @route   GET /api/bitcoin/ethereum
+ * @desc    Retorna o preço atual do Ethereum
+ * @access  Public
+ */
+router.get('/ethereum', bitcoinController.getEthereumPrice);
+
+/**
+ * @route   GET /api/bitcoin/market
+ * @desc    Retorna dados gerais do mercado
+ * @access  Public
+ */
+router.get('/market', bitcoinController.getMarketOverview);
+
+/**
  * @route   GET /api/bitcoin/health
  * @desc    Health check da API
  * @access  Public
