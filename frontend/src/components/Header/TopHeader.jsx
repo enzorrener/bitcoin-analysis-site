@@ -9,6 +9,7 @@ const TopHeader = () => {
   const [marketData, setMarketData] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Buscar dados de todas as moedas a cada 30 segundos
   useEffect(() => {
@@ -72,6 +73,22 @@ const TopHeader = () => {
     }
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('.user-profile')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isDropdownOpen]);
+
   return (
     <div className={`top-header ${!isVisible ? 'hidden' : ''}`}>
       <div className="container">
@@ -129,7 +146,12 @@ const TopHeader = () => {
             </button>
             <button className="action-btn settings">⚙️</button>
             <div className="user-profile">
-              <div className="avatar">👤</div>
+              <div className="avatar" onClick={toggleDropdown}>👤</div>
+              {isDropdownOpen && (
+                <div className="profile-dropdown">
+                  <a href="#" className="dropdown-item">Entrar</a>
+                </div>
+              )}
             </div>
           </div>
         </nav>
