@@ -319,6 +319,28 @@ async function updateMarketTicker() {
     }
 }
 
+// Controle do dropdown de perfil
+document.addEventListener('DOMContentLoaded', function() {
+    const profileAvatar = document.getElementById('profile-avatar');
+    const profileDropdown = document.getElementById('profile-dropdown');
+
+    if (profileAvatar && profileDropdown) {
+        // Toggle dropdown ao clicar no avatar
+        profileAvatar.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = profileDropdown.style.display === 'block';
+            profileDropdown.style.display = isVisible ? 'none' : 'block';
+        });
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-profile')) {
+                profileDropdown.style.display = 'none';
+            }
+        });
+    }
+});
+
 // Executa quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
     updateReportDate();
