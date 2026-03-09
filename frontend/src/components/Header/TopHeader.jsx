@@ -149,7 +149,7 @@ const TopHeader = () => {
               <div className="avatar" onClick={toggleDropdown}>👤</div>
               {isDropdownOpen && (
                 <div className="profile-dropdown">
-                  <a href="#" className="dropdown-item">Entrar</a>
+                  <a href="/login" className="dropdown-item">Entrar</a>
                 </div>
               )}
             </div>
