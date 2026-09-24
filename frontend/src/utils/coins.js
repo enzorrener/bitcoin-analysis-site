@@ -39,7 +39,10 @@ export const COIN_BY_PAIR = Object.fromEntries(COINS.map((coin) => [coin.pair, c
 export const COIN_BY_SYMBOL = Object.fromEntries(COINS.map((coin) => [coin.symbol, coin]));
 
 /** Moedas exibidas na faixa de cotações do topo */
-export const TICKER_PAIRS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'BNBUSDT', 'DOGEUSDT', 'ADAUSDT', 'LINKUSDT'];
+export const TICKER_PAIRS = [
+  'BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'BNBUSDT', 'DOGEUSDT', 'ADAUSDT',
+  'TRXUSDT', 'LINKUSDT', 'AVAXUSDT', 'TONUSDT', 'SUIUSDT', 'LTCUSDT', 'DOTUSDT'
+];
 
 /** Moedas usadas para o "humor" geral do mercado */
 export const MARKET_PAIRS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'];

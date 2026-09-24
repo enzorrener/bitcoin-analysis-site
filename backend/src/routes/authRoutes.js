@@ -35,4 +35,18 @@ router.post('/login', authLimiter, authController.login);
  */
 router.get('/me', requireAuth, authController.me);
 
+/**
+ * @route   PUT /api/auth/me
+ * @desc    Atualiza nome, apelido, e-mail (exige currentPassword), foto e banner
+ * @access  Private
+ */
+router.put('/me', requireAuth, authController.updateMe);
+
+/**
+ * @route   PUT /api/auth/password
+ * @desc    Troca a senha (currentPassword, newPassword)
+ * @access  Private
+ */
+router.put('/password', authLimiter, requireAuth, authController.changePassword);
+
 export default router;

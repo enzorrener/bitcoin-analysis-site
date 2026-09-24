@@ -6,6 +6,8 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { getNews } from '../../services/api';
 import { formatRelativeTime } from '../../utils/formatters';
 import TickerBar from '../TickerBar/TickerBar';
+import UserAvatar from '../Profile/UserAvatar';
+import { displayNameOf } from '../../utils/profile';
 import { BellIcon, CloseIcon, LogOutIcon, MenuIcon, UserIcon, ChartIcon } from '../Icons/Icons';
 import './TopHeader.css';
 
@@ -147,13 +149,6 @@ const TopHeader = () => {
     navigate('/');
   };
 
-  const initials = user?.name
-    ?.split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join('');
-
   return (
     <header className={`top-header ${!isVisible && !openMenu ? 'hidden' : ''}`}>
       <div className="container">
@@ -206,12 +201,12 @@ const TopHeader = () => {
             <div className="menu-anchor user-profile">
               <button
                 type="button"
-                className={`avatar ${isAuthenticated ? 'logged' : ''}`}
+                className={`avatar ${isAuthenticated ? 'logged' : ''} ${user?.avatar ? 'has-photo' : ''}`}
                 onClick={() => toggle('profile')}
                 aria-label="Conta"
                 aria-expanded={openMenu === 'profile'}
               >
-                {isAuthenticated && initials ? initials : <UserIcon size={18} />}
+                {isAuthenticated ? <UserAvatar user={user} size={36} /> : <UserIcon size={18} />}
               </button>
 
               {openMenu === 'profile' && (
@@ -219,9 +214,12 @@ const TopHeader = () => {
                   {isAuthenticated ? (
                     <>
                       <div className="dropdown-header">
-                        <strong>{user?.name}</strong>
+                        <strong>{displayNameOf(user)}</strong>
                         <span>{user?.email}</span>
                       </div>
+                      <Link to="/perfil" className="dropdown-item">
+                        <UserIcon size={16} /> Meu perfil
+                      </Link>
                       <Link to="/app" className="dropdown-item">
                         <ChartIcon size={16} /> Meu Painel
                       </Link>

@@ -42,7 +42,12 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Parse JSON
-app.use(express.json({ limit: '10kb' }));
+// Atualização de perfil aceita imagens (foto e banner); o resto da API, só JSON pequeno
+const smallJson = express.json({ limit: '10kb' });
+const profileJson = express.json({ limit: '2mb' });
+app.use((req, res, next) =>
+  (req.method === 'PUT' && req.path === '/api/auth/me' ? profileJson : smallJson)(req, res, next)
+);
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // ===== LOGGING DE REQUISIÇÕES (DEV) =====
@@ -71,7 +76,9 @@ app.get('/', (req, res) => {
       news: '/api/news',
       register: 'POST /api/auth/register',
       login: 'POST /api/auth/login',
-      me: 'GET /api/auth/me'
+      me: 'GET /api/auth/me',
+      updateProfile: 'PUT /api/auth/me',
+      changePassword: 'PUT /api/auth/password'
     }
   });
 });

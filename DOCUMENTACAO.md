@@ -233,6 +233,8 @@ Abra seu navegador em: **http://localhost:3000**
 | POST | `/auth/register` | Criar conta |
 | POST | `/auth/login` | Entrar |
 | GET | `/auth/me` | Usuário logado (Bearer token) |
+| PUT | `/auth/me` | Editar perfil: `name`, `displayName`, `email` (exige `currentPassword`), `avatar`, `banner` |
+| PUT | `/auth/password` | Trocar senha: `currentPassword`, `newPassword` |
 
 #### 1. Health Check
 ```http
@@ -329,8 +331,10 @@ GET /api/bitcoin/stats
 | `/login` | Entrar | Público |
 | `/cadastro` | Criar conta | Público |
 | `/app` | Meu Painel (gráfico, busca de preços, favoritas, conversor) | Logado |
+| `/perfil` (ou `/profile`) | Meu perfil: nome, apelido, e-mail, senha, foto e banner | Logado |
 
 ### TopHeader + TickerBar
+- Faixa de cotações em carrossel contínuo (pausa ao passar o mouse; parada para quem prefere menos movimento)
 - Menu com abas, seletor de moeda (US$ / R$), sino com notícias novas e menu da conta
 - Faixa de cotações ao vivo via WebSocket da Binance
 - Se esconde ao rolar para baixo (listener passivo + requestAnimationFrame)
@@ -394,6 +398,10 @@ Para rodar a coleta manualmente: `cd backend && npm run news:update`.
 - `POST /api/auth/register` → `{ name, email, password }` (senha com 8+ caracteres, letras e números)
 - `POST /api/auth/login` → `{ email, password }`
 - `GET /api/auth/me` → header `Authorization: Bearer <token>`
+- `PUT /api/auth/me` → edita nome, "como quer ser chamado", e-mail (pede a senha atual), foto e banner.
+  As imagens são recortadas e comprimidas no navegador e enviadas como data URL (foto até ~300 KB,
+  banner até ~1,1 MB); o banner também aceita estilos prontos (`preset:aurora`, `preset:ocean`...).
+- `PUT /api/auth/password` → `{ currentPassword, newPassword }`
 
 Senhas com **bcrypt**, sessão com **JWT** (`JWT_SECRET`, validade `JWT_EXPIRES_IN`). Os usuários ficam no
 PostgreSQL quando conectado (tabela `users` criada automaticamente) ou em `backend/data/users.json`.

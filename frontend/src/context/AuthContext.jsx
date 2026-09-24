@@ -72,6 +72,22 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (data) => startSession(await authService.register(data)), [startSession]);
 
+  const updateProfile = useCallback(
+    async (changes) => {
+      const user = await authService.updateProfile(session.token, changes);
+      const next = { ...session, user };
+      setSession(next);
+      writeSession(next);
+      return user;
+    },
+    [session]
+  );
+
+  const changePassword = useCallback(
+    (passwords) => authService.changePassword(session.token, passwords),
+    [session]
+  );
+
   const logout = useCallback(() => {
     setSession(null);
     writeSession(null);
@@ -87,9 +103,11 @@ export const AuthProvider = ({ children }) => {
       isLocalAuth: authService.isLocalAuth,
       login,
       register,
-      logout
+      logout,
+      updateProfile,
+      changePassword
     }),
-    [session, status, login, register, logout]
+    [session, status, login, register, logout, updateProfile, changePassword]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

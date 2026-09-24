@@ -48,17 +48,52 @@
 }
 
 .ticker-scroll {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  mask-image: linear-gradient(90deg, #000 92%, transparent);
   flex: 1;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 94%, transparent);
 }
 
-.ticker-scroll::-webkit-scrollbar {
-  display: none;
+/* Carrossel contínuo: a trilha tem duas cópias e anda metade da largura */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: tickerCarousel 45s linear infinite;
+  will-change: transform;
+}
+
+.ticker-scroll:hover .ticker-track,
+.ticker-scroll:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+
+.ticker-group {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding-right: 28px;
+  flex-shrink: 0;
+}
+
+@keyframes tickerCarousel {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Quem prefere menos movimento vê a lista parada, com rolagem manual */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ticker-track {
+    animation: none;
+  }
+
+  .ticker-group[aria-hidden] {
+    display: none;
+  }
 }
 
 .ticker-item {

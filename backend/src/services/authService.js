@@ -40,7 +40,10 @@ export { AuthError };
 export const toPublicUser = (user) => ({
   id: user.id,
   name: user.name,
+  displayName: user.displayName || null,
   email: user.email,
+  avatar: user.avatar || null,
+  banner: user.banner || null,
   createdAt: user.createdAt
 });
 
@@ -117,4 +120,110 @@ export const verifyToken = async (token) => {
     throw new AuthError('Usuário não encontrado.', 401);
   }
   return toPublicUser(user);
+};
+
+// ===== Perfil =====
+
+const IMAGE_REGEX = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
+const BANNER_PRESET_REGEX = /^preset:[a-z-]{1,24}$/;
+const MAX_AVATAR_LENGTH = 400 * 1024;   // ~300 KB de imagem
+const MAX_BANNER_LENGTH = 1500 * 1024;  // ~1,1 MB de imagem
+
+/**
+ * Valida imagem enviada como data URL (null ou '' remove a imagem)
+ */
+const validateImage = (value, maxLength, field, allowPreset = false) => {
+  if (value === null || value === '') return null;
+  if (typeof value !== 'string') throw new AuthError('Imagem inválida.', 400, field);
+  if (allowPreset && BANNER_PRESET_REGEX.test(value)) return value;
+  if (!IMAGE_REGEX.test(value)) throw new AuthError('Use uma imagem PNG, JPG ou WEBP.', 400, field);
+  if (value.length > maxLength) throw new AuthError('Imagem muito grande. Escolha um arquivo menor.', 400, field);
+  return value;
+};
+
+const checkPassword = async (user, currentPassword) => {
+  if (typeof currentPassword !== 'string' || !currentPassword) {
+    throw new AuthError('Informe sua senha atual para confirmar.', 400, 'currentPassword');
+  }
+  if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+    throw new AuthError('Senha atual incorreta.', 401, 'currentPassword');
+  }
+};
+
+/**
+ * Atualiza nome, "como quer ser chamado", e-mail, foto e banner.
+ * Trocar o e-mail exige a senha atual.
+ */
+export const updateProfile = async (userId, payload = {}) => {
+  const user = await userService.findUserById(userId);
+  if (!user) throw new AuthError('Usuário não encontrado.', 404);
+
+  const changes = {};
+
+  if (payload.name !== undefined) {
+    const name = typeof payload.name === 'string' ? payload.name.trim() : '';
+    if (name.length < 2 || name.length > 120) {
+      throw new AuthError('Informe seu nome (mínimo de 2 caracteres).', 400, 'name');
+    }
+    changes.name = name;
+  }
+
+  if (payload.displayName !== undefined) {
+    const displayName = typeof payload.displayName === 'string' ? payload.displayName.trim() : '';
+    if (displayName.length > 60) {
+      throw new AuthError('O apelido pode ter no máximo 60 caracteres.', 400, 'displayName');
+    }
+    changes.displayName = displayName || null;
+  }
+
+  if (payload.email !== undefined) {
+    const email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
+    if (!EMAIL_REGEX.test(email) || email.length > 255) {
+      throw new AuthError('Informe um e-mail válido.', 400, 'email');
+    }
+    if (email !== user.email) {
+      await checkPassword(user, payload.currentPassword);
+      changes.email = email;
+    }
+  }
+
+  if (payload.avatar !== undefined) {
+    changes.avatar = validateImage(payload.avatar, MAX_AVATAR_LENGTH, 'avatar');
+  }
+
+  if (payload.banner !== undefined) {
+    changes.banner = validateImage(payload.banner, MAX_BANNER_LENGTH, 'banner', true);
+  }
+
+  try {
+    const updated = await userService.updateUser(userId, changes);
+    return toPublicUser(updated);
+  } catch (error) {
+    if (error.code === 'EMAIL_IN_USE') {
+      throw new AuthError('Este e-mail já está cadastrado.', 409, 'email');
+    }
+    throw error;
+  }
+};
+
+/**
+ * Troca a senha (exige a senha atual)
+ */
+export const changePassword = async (userId, { currentPassword, newPassword } = {}) => {
+  const user = await userService.findUserById(userId);
+  if (!user) throw new AuthError('Usuário não encontrado.', 404);
+
+  await checkPassword(user, currentPassword);
+
+  if (typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 128) {
+    throw new AuthError('A nova senha deve ter entre 8 e 128 caracteres.', 400, 'newPassword');
+  }
+  if (!/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+    throw new AuthError('A nova senha deve conter letras e números.', 400, 'newPassword');
+  }
+  if (await bcrypt.compare(newPassword, user.passwordHash)) {
+    throw new AuthError('A nova senha deve ser diferente da atual.', 400, 'newPassword');
+  }
+
+  await userService.updateUser(userId, { passwordHash: await bcrypt.hash(newPassword, 10) });
 };
