@@ -23,7 +23,7 @@ const main = async () => {
 
   console.log('Fontes:');
   news.sources.forEach((source) => {
-    console.log(`  ${source.ok ? 'OK  ' : 'FALHA'} ${source.name.padEnd(22)} ${source.count} itens${source.error ? ` (${source.error})` : ''}`);
+    console.log(`  ${source.ok ? 'OK   ' : 'FALHA'} ${source.name.padEnd(22)} ${String(source.count).padStart(3)} itens ${source.url || `(${source.error})`}`);
   });
 
   if (news.items.length === 0 && fallbackUrl) {

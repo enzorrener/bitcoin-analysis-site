@@ -20,16 +20,32 @@ export const NEWS_SCHEDULE = {
 
 /**
  * Fontes de notícias (RSS). Foco em portais brasileiros + referências internacionais.
+ * Cada fonte pode ter endereços alternativos: a coleta usa o primeiro que responder.
  */
 export const NEWS_SOURCES = [
-  { id: 'cointelegraph-br', name: 'Cointelegraph Brasil', url: 'https://br.cointelegraph.com/rss', lang: 'pt' },
-  { id: 'portal-do-bitcoin', name: 'Portal do Bitcoin', url: 'https://portaldobitcoin.uol.com.br/feed/', lang: 'pt' },
-  { id: 'livecoins', name: 'Livecoins', url: 'https://livecoins.com.br/feed/', lang: 'pt' },
-  { id: 'infomoney', name: 'InfoMoney', url: 'https://www.infomoney.com.br/mercados/criptomoedas/feed/', lang: 'pt' },
-  { id: 'criptofacil', name: 'CriptoFácil', url: 'https://www.criptofacil.com/feed/', lang: 'pt' },
-  { id: 'coindesk', name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', lang: 'en' },
-  { id: 'decrypt', name: 'Decrypt', url: 'https://decrypt.co/feed', lang: 'en' }
+  { id: 'portal-do-bitcoin', name: 'Portal do Bitcoin', urls: ['https://portaldobitcoin.uol.com.br/feed/'], lang: 'pt' },
+  { id: 'livecoins', name: 'Livecoins', urls: ['https://livecoins.com.br/feed/'], lang: 'pt' },
+  { id: 'criptofacil', name: 'CriptoFácil', urls: ['https://www.criptofacil.com/feed/'], lang: 'pt' },
+  { id: 'beincrypto-br', name: 'BeInCrypto Brasil', urls: ['https://br.beincrypto.com/feed/'], lang: 'pt' },
+  {
+    id: 'cointelegraph-br',
+    name: 'Cointelegraph Brasil',
+    urls: ['https://br.cointelegraph.com/rss', 'https://cointelegraph.com.br/rss', 'https://br.cointelegraph.com/feed'],
+    lang: 'pt'
+  },
+  {
+    id: 'money-times',
+    name: 'Money Times',
+    urls: ['https://www.moneytimes.com.br/criptomoedas/feed/', 'https://www.moneytimes.com.br/tag/criptomoedas/feed/'],
+    lang: 'pt'
+  },
+  { id: 'bitnoticias', name: 'BitNotícias', urls: ['https://bitnoticias.com.br/feed/'], lang: 'pt' },
+  { id: 'coindesk', name: 'CoinDesk', urls: ['https://www.coindesk.com/arc/outboundfeeds/rss/'], lang: 'en' },
+  { id: 'decrypt', name: 'Decrypt', urls: ['https://decrypt.co/feed'], lang: 'en' }
 ];
+
+// Público do site é brasileiro: notícias em português ganham prioridade
+const LANG_BOOST = { pt: 1.3, en: 1 };
 
 const MAX_ITEMS = 30;
 const MAX_AGE_HOURS = 72;
@@ -241,7 +257,7 @@ export const rankNews = (items, now = new Date()) => {
       const description = normalize(item.description);
       const ageHours = Math.max(0, (now - new Date(item.publishedAt)) / 36e5);
       const relevance = keywordScore(title, description);
-      const recency = 0.5 ** (ageHours / HALF_LIFE_HOURS);
+      const recency = 0.5 ** (ageHours / HALF_LIFE_HOURS) * (LANG_BOOST[item.lang] || 1);
 
       return {
         ...item,
@@ -327,11 +343,8 @@ export const getNextUpdate = (now = new Date()) => scheduleSlots(now).find((slot
 export const getLastScheduledUpdate = (now = new Date()) =>
   scheduleSlots(now).filter((slot) => slot <= now).pop();
 
-/**
- * Baixa um feed e retorna as notícias dele
- */
-const fetchSource = async (source) => {
-  const { data } = await axios.get(source.url, {
+const requestFeed = async (url) => {
+  const { data } = await axios.get(url, {
     timeout: 15000,
     responseType: 'text',
     maxContentLength: 5 * 1024 * 1024,
@@ -340,7 +353,24 @@ const fetchSource = async (source) => {
       Accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.8'
     }
   });
-  return parseFeed(data, source);
+  return data;
+};
+
+/**
+ * Baixa um feed (tentando os endereços alternativos) e retorna as notícias dele
+ */
+const fetchSource = async (source) => {
+  let lastError;
+  for (const url of source.urls) {
+    try {
+      const items = parseFeed(await requestFeed(url), source);
+      if (items.length > 0) return { url, items };
+      lastError = new Error('Feed sem notícias');
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
 };
 
 /**
@@ -355,12 +385,13 @@ export const collectNews = async (now = new Date()) => {
       id: source.id,
       name: source.name,
       ok: result.status === 'fulfilled',
-      count: result.status === 'fulfilled' ? result.value.length : 0,
+      count: result.status === 'fulfilled' ? result.value.items.length : 0,
+      ...(result.status === 'fulfilled' && { url: result.value.url }),
       ...(result.status === 'rejected' && { error: result.reason?.message })
     };
   });
 
-  const allItems = results.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+  const allItems = results.flatMap((result) => (result.status === 'fulfilled' ? result.value.items : []));
   const items = rankNews(allItems, now);
 
   return {
