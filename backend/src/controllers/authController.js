@@ -42,3 +42,27 @@ export const login = async (req, res) => {
 export const me = (req, res) => {
   res.json({ success: true, data: { user: req.user } });
 };
+
+/**
+ * Controller: Atualiza o perfil do usuário autenticado
+ */
+export const updateMe = async (req, res) => {
+  try {
+    const user = await authService.updateProfile(req.user.id, req.body || {});
+    res.json({ success: true, data: { user } });
+  } catch (error) {
+    handleError(res, error, 'Erro ao atualizar perfil');
+  }
+};
+
+/**
+ * Controller: Troca a senha do usuário autenticado
+ */
+export const changePassword = async (req, res) => {
+  try {
+    await authService.changePassword(req.user.id, req.body || {});
+    res.json({ success: true, message: 'Senha alterada com sucesso.' });
+  } catch (error) {
+    handleError(res, error, 'Erro ao alterar senha');
+  }
+};

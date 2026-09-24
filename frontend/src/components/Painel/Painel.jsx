@@ -8,6 +8,7 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { getFearGreed, getGlobalMarket } from '../../services/api';
 import { COIN_BY_PAIR, DEFAULT_WATCHLIST } from '../../utils/coins';
 import { formatNumber } from '../../utils/formatters';
+import { displayNameOf } from '../../utils/profile';
 import BitcoinChart from '../Chart/BitcoinChart';
 import CryptoSearch from '../CryptoSearch/CryptoSearch';
 import Converter from '../Converter/Converter';
@@ -123,7 +124,7 @@ const Painel = () => {
     [setFavorites]
   );
 
-  const firstName = useMemo(() => user?.name?.split(' ')[0] || '', [user]);
+  const firstName = useMemo(() => displayNameOf(user), [user]);
   const btc = kpiPrices.BTCUSDT;
   const eth = kpiPrices.ETHUSDT;
 

@@ -113,6 +113,8 @@ Leia: **[DOCUMENTACAO.md](./DOCUMENTACAO.md)**
 | POST | `/api/auth/register` | Criar conta |
 | POST | `/api/auth/login` | Entrar |
 | GET | `/api/auth/me` | Usuário logado |
+| PUT | `/api/auth/me` | Editar perfil (nome, apelido, e-mail, foto, banner) |
+| PUT | `/api/auth/password` | Trocar senha |
 
 Exemplo de uso:
 
@@ -130,6 +132,7 @@ curl http://localhost:5000/api/bitcoin/price
 - [x] Aba "Notícias relevantes" com rotina às 09:00 e 18:00
 - [x] Sistema de autenticação (cadastro, login, JWT)
 - [x] Painel do usuário com busca de preços, favoritas e conversor
+- [x] Página de perfil (/perfil): nome, apelido, e-mail, senha, foto e banner
 - [x] Sistema de cache
 - [x] Design responsivo
 - [x] Rate limiting

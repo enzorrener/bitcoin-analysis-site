@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Link, Routes, Route } from 'react-router-dom';
+import { Link, Navigate, Routes, Route } from 'react-router-dom';
 import Layout, { PageLoader } from './components/Layout/Layout';
 import MainHeader from './components/Header/MainHeader';
 import HeroStats from './components/HeroStats/HeroStats';
@@ -15,6 +15,7 @@ const NewsPage = lazy(() => import('./components/News/NewsPage'));
 const Painel = lazy(() => import('./components/Painel/Painel'));
 const Login = lazy(() => import('./components/Login/Login'));
 const Register = lazy(() => import('./components/Register/Register'));
+const Profile = lazy(() => import('./components/Profile/Profile'));
 
 const SectionLoader = () => (
   <div className="section">
@@ -63,6 +64,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/profile" element={<Navigate to="/perfil" replace />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route

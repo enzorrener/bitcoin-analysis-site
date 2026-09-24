@@ -51,7 +51,15 @@ const readLocalUsers = () => {
   }
 };
 
-const publicUser = ({ id, name, email, createdAt }) => ({ id, name, email, createdAt });
+const publicUser = ({ id, name, displayName, email, avatar, banner, createdAt }) => ({
+  id,
+  name,
+  displayName: displayName || null,
+  email,
+  avatar: avatar || null,
+  banner: banner || null,
+  createdAt
+});
 
 const localRegister = async ({ name, email, password }) => {
   const users = readLocalUsers();
@@ -97,12 +105,65 @@ const toAuthError = (error) => {
   return new AuthError(error.body?.message || error.message, error.body?.field);
 };
 
-const post = async (path, body) => {
+const send = async (method, path, body, token) => {
   try {
-    return await backendRequest(path, { method: 'POST', body: JSON.stringify(body) });
+    return await backendRequest(path, {
+      method,
+      body: JSON.stringify(body),
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      timeout: 20000
+    });
   } catch (error) {
     throw toAuthError(error);
   }
+};
+
+const post = (path, body) => send('POST', path, body);
+
+// ===== Perfil no modo local =====
+
+const saveLocalUsers = (users) => {
+  try {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  } catch {
+    throw new AuthError('Espaço do navegador esgotado. Tente uma imagem menor.');
+  }
+};
+
+const localUpdateProfile = async (token, changes) => {
+  const id = token.replace(/^local:/, '');
+  const users = readLocalUsers();
+  const user = users.find((u) => u.id === id);
+  if (!user) throw new AuthError('Sessão expirada.');
+
+  if (changes.email !== undefined && changes.email !== user.email) {
+    if (!changes.currentPassword || (await hashPassword(changes.currentPassword, user.salt)) !== user.hash) {
+      throw new AuthError(changes.currentPassword ? 'Senha atual incorreta.' : 'Informe sua senha atual para confirmar.', 'currentPassword');
+    }
+    if (users.some((u) => u.email === changes.email && u.id !== id)) {
+      throw new AuthError('Este e-mail já está cadastrado neste navegador.', 'email');
+    }
+    user.email = changes.email;
+  }
+  ['name', 'displayName', 'avatar', 'banner'].forEach((key) => {
+    if (changes[key] !== undefined) user[key] = changes[key] || null;
+  });
+
+  saveLocalUsers(users);
+  return publicUser(user);
+};
+
+const localChangePassword = async (token, { currentPassword, newPassword }) => {
+  const id = token.replace(/^local:/, '');
+  const users = readLocalUsers();
+  const user = users.find((u) => u.id === id);
+  if (!user) throw new AuthError('Sessão expirada.');
+  if ((await hashPassword(currentPassword, user.salt)) !== user.hash) {
+    throw new AuthError('Senha atual incorreta.', 'currentPassword');
+  }
+  user.salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+  user.hash = await hashPassword(newPassword, user.salt);
+  saveLocalUsers(users);
 };
 
 // ===== API =====
@@ -136,4 +197,41 @@ export const fetchCurrentUser = async (token) => {
   } catch (error) {
     throw toAuthError(error);
   }
+};
+
+/**
+ * Atualiza nome, apelido, e-mail, foto e banner. Retorna o usuário atualizado.
+ * Trocar o e-mail exige currentPassword.
+ */
+export const updateProfile = async (token, changes) => {
+  const payload = { ...changes };
+  if (payload.name !== undefined) {
+    payload.name = payload.name.trim();
+    if (payload.name.length < 2) throw new AuthError('Informe seu nome (mínimo de 2 caracteres).', 'name');
+  }
+  if (payload.displayName !== undefined) {
+    payload.displayName = payload.displayName.trim();
+    if (payload.displayName.length > 60) throw new AuthError('O apelido pode ter no máximo 60 caracteres.', 'displayName');
+  }
+  if (payload.email !== undefined) {
+    payload.email = payload.email.trim().toLowerCase();
+    if (!EMAIL_REGEX.test(payload.email)) throw new AuthError('Informe um e-mail válido.', 'email');
+  }
+
+  if (token.startsWith('local:')) return localUpdateProfile(token, payload);
+  const data = await send('PUT', '/auth/me', payload, token);
+  return data.user;
+};
+
+/**
+ * Troca a senha (exige a senha atual)
+ */
+export const changePassword = async (token, { currentPassword, newPassword }) => {
+  if (!currentPassword) throw new AuthError('Informe sua senha atual.', 'currentPassword');
+  if (newPassword.length < 8) throw new AuthError('A nova senha deve ter pelo menos 8 caracteres.', 'newPassword');
+  if (!/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+    throw new AuthError('A nova senha deve conter letras e números.', 'newPassword');
+  }
+  if (token.startsWith('local:')) return localChangePassword(token, { currentPassword, newPassword });
+  await send('PUT', '/auth/password', { currentPassword, newPassword }, token);
 };

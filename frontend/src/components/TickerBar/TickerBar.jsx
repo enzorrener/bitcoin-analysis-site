@@ -35,33 +35,40 @@ const TickerBar = () => {
           {STATUS_LABEL[status] || 'Conectando'}
         </span>
 
+        {/* Carrossel: a lista é renderizada duas vezes para o movimento ser contínuo */}
         <div className="ticker-scroll">
-          {TICKER_PAIRS.map((pair) => {
-            const ticker = prices[pair];
-            const coin = COIN_BY_PAIR[pair];
-            return (
-              <div className="ticker-item" key={pair}>
-                <CoinIcon symbol={coin.symbol} size={16} />
-                <span className="ticker-symbol">{coin.symbol}</span>
-                <LivePrice value={ticker?.price} previous={ticker?.previousPrice} className="ticker-price" />
-                {ticker && (
-                  <span className={`ticker-change ${ticker.change24h >= 0 ? 'positive' : 'negative'}`}>
-                    {formatPercentage(ticker.change24h)}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+          <div className="ticker-track">
+            {[0, 1].map((copy) => (
+              <div className="ticker-group" key={copy} aria-hidden={copy === 1 || undefined}>
+                {TICKER_PAIRS.map((pair) => {
+                  const ticker = prices[pair];
+                  const coin = COIN_BY_PAIR[pair];
+                  return (
+                    <div className="ticker-item" key={pair}>
+                      <CoinIcon symbol={coin.symbol} size={16} />
+                      <span className="ticker-symbol">{coin.symbol}</span>
+                      <LivePrice value={ticker?.price} previous={ticker?.previousPrice} className="ticker-price" />
+                      {ticker && (
+                        <span className={`ticker-change ${ticker.change24h >= 0 ? 'positive' : 'negative'}`}>
+                          {formatPercentage(ticker.change24h)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
 
-          <div className="ticker-item ticker-market">
-            <span className="ticker-symbol">Mercado</span>
-            {marketChange != null ? (
-              <span className={`ticker-change ${marketChange >= 0 ? 'positive' : 'negative'}`}>
-                {formatPercentage(marketChange)}
-              </span>
-            ) : (
-              <span className="skeleton">0,00%</span>
-            )}
+                <div className="ticker-item ticker-market">
+                  <span className="ticker-symbol">Mercado</span>
+                  {marketChange != null ? (
+                    <span className={`ticker-change ${marketChange >= 0 ? 'positive' : 'negative'}`}>
+                      {formatPercentage(marketChange)}
+                    </span>
+                  ) : (
+                    <span className="skeleton">0,00%</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

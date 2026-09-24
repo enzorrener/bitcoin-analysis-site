@@ -26,6 +26,14 @@ export const initUserStore = async (dbConnected) => {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
+    // Campos do perfil (adicionados depois da primeira versão da tabela)
+    await pool.query(`
+      ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS display_name VARCHAR(60),
+        ADD COLUMN IF NOT EXISTS avatar TEXT,
+        ADD COLUMN IF NOT EXISTS banner TEXT,
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ
+    `);
     storage = 'postgres';
   } else {
     storage = 'file';
@@ -55,6 +63,9 @@ const fromRow = (row) =>
     name: row.name,
     email: row.email,
     passwordHash: row.password_hash ?? row.passwordHash,
+    displayName: row.display_name ?? row.displayName ?? null,
+    avatar: row.avatar ?? null,
+    banner: row.banner ?? null,
     createdAt: new Date(row.created_at ?? row.createdAt).toISOString()
   };
 
@@ -116,6 +127,62 @@ export const createUser = async ({ name, email, passwordHash }) => {
     users.push(user);
     await writeUsersFile(users);
     return user;
+  });
+  writeQueue = task.catch(() => {});
+  return task;
+};
+
+const emailInUse = () => {
+  const conflict = new Error('E-mail já cadastrado');
+  conflict.code = 'EMAIL_IN_USE';
+  return conflict;
+};
+
+// Campos que podem ser alterados e a coluna correspondente no PostgreSQL
+const UPDATABLE = {
+  name: 'name',
+  email: 'email',
+  displayName: 'display_name',
+  avatar: 'avatar',
+  banner: 'banner',
+  passwordHash: 'password_hash'
+};
+
+/**
+ * Atualiza os campos informados do usuário e retorna o usuário atualizado.
+ * Lança erro com code 'EMAIL_IN_USE' se o novo e-mail já pertencer a outra conta.
+ */
+export const updateUser = async (id, changes) => {
+  const fields = Object.keys(changes).filter((key) => key in UPDATABLE);
+  if (fields.length === 0) return findUserById(id);
+
+  if (storage === 'postgres') {
+    const sets = fields.map((key, i) => `${UPDATABLE[key]} = $${i + 2}`);
+    try {
+      const { rows } = await pool.query(
+        `UPDATE users SET ${sets.join(', ')}, updated_at = NOW() WHERE id = $1 RETURNING *`,
+        [id, ...fields.map((key) => changes[key])]
+      );
+      return fromRow(rows[0]);
+    } catch (error) {
+      if (error.code === '23505') throw emailInUse();
+      throw error;
+    }
+  }
+
+  const task = writeQueue.then(async () => {
+    const users = await readUsersFile();
+    const index = users.findIndex((user) => user.id === id);
+    if (index === -1) return null;
+    if (changes.email && users.some((user) => user.email === changes.email && user.id !== id)) {
+      throw emailInUse();
+    }
+    fields.forEach((key) => {
+      users[index][key] = changes[key];
+    });
+    users[index].updatedAt = new Date().toISOString();
+    await writeUsersFile(users);
+    return fromRow(users[index]);
   });
   writeQueue = task.catch(() => {});
   return task;
