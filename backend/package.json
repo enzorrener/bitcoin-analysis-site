@@ -1,13 +1,14 @@
 {
   "name": "bitcoin-analysis-backend",
   "version": "1.0.0",
-  "description": "Backend API para análise de Bitcoin em tempo real",
+  "description": "Backend API para análise de Bitcoin e criptomoedas em tempo real",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "news:update": "node src/scripts/updateNews.js --out data/news.json"
   },
   "keywords": [
     "bitcoin",
@@ -19,16 +20,29 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.6.2",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "axios": "^1.6.2",
-    "pg": "^8.11.3",
-    "node-cache": "^5.1.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "fast-xml-parser": "^4.5.0",
     "helmet": "^7.1.0",
-    "express-rate-limit": "^7.1.5"
+    "jsonwebtoken": "^9.0.2",
+    "node-cache": "^5.1.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "data/*"
+    ]
   }
 }

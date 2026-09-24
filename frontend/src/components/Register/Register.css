@@ -1,0 +1,85 @@
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.strength-bars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  flex: 1;
+}
+
+.strength-bars span {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  transition: background-color 0.2s ease;
+}
+
+.strength-bars span.on.s1 {
+  background: var(--danger);
+}
+
+.strength-bars span.on.s2 {
+  background: var(--warning);
+}
+
+.strength-bars span.on.s3 {
+  background: var(--success);
+}
+
+.strength-label {
+  font-size: 12px;
+  color: var(--secondary);
+  min-width: 70px;
+  text-align: right;
+}
+
+.password-rules {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.password-rules li::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.password-rules li.ok {
+  color: var(--success);
+}
+
+.password-rules li.ok::before {
+  background: var(--success);
+}
+
+.terms-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13.5px;
+  color: var(--secondary);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.terms-check input {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}

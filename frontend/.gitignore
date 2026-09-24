@@ -20,3 +20,6 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Gerado pela rotina de notícias no deploy
+public/data/news.json

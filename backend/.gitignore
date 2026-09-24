@@ -23,3 +23,6 @@ Thumbs.db
 # Build
 dist/
 build/
+
+# Dados locais (usuários e notícias coletadas)
+data/
