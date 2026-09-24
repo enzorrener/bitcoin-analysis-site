@@ -18,18 +18,31 @@ Fornecer análises profissionais do mercado de Bitcoin, incluindo:
 ```
 bitcoin-analysis-site/
 │
+├── .github/workflows/
+│   └── deploy.yml                # Deploy no GitHub Pages + rotina de notícias (09:00 e 18:00)
+│
 ├── backend/                      # API Node.js + Express
 │   ├── src/
 │   │   ├── config/
+│   │   │   ├── env.js           # Carrega o .env
 │   │   │   └── database.js      # Configuração PostgreSQL
 │   │   ├── controllers/
-│   │   │   └── bitcoinController.js  # Lógica de controle
-│   │   ├── routes/
-│   │   │   └── bitcoinRoutes.js      # Rotas da API
+│   │   │   ├── bitcoinController.js  # Preço, histórico e estatísticas
+│   │   │   ├── marketController.js   # Cotações, mercado global, busca
+│   │   │   ├── newsController.js     # Notícias relevantes
+│   │   │   └── authController.js     # Cadastro e login
+│   │   ├── routes/              # bitcoin, market, news e auth
 │   │   ├── services/
-│   │   │   └── binanceService.js     # Integração Binance API
-│   │   ├── middleware/
-│   │   │   └── errorHandler.js       # Tratamento de erros
+│   │   │   ├── binanceService.js     # Integração Binance API
+│   │   │   ├── marketService.js      # CoinGecko + Medo & Ganância
+│   │   │   ├── newsService.js        # Coleta e ranking de notícias (RSS)
+│   │   │   ├── authService.js        # bcrypt + JWT
+│   │   │   └── userService.js        # Usuários (PostgreSQL ou arquivo JSON)
+│   │   ├── jobs/
+│   │   │   └── newsJob.js            # Rotina node-cron 09:00 e 18:00 (Brasília)
+│   │   ├── scripts/
+│   │   │   └── updateNews.js         # Gera o news.json (usado no deploy)
+│   │   ├── middleware/          # Erros, autenticação JWT e cache HTTP
 │   │   └── server.js            # Servidor principal
 │   ├── package.json
 │   └── .env.example
@@ -37,19 +50,28 @@ bitcoin-analysis-site/
 ├── frontend/                     # Aplicação React.js
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Header/          # Cabeçalhos (TopHeader, MainHeader)
-│   │   │   ├── HeroStats/       # Cards de estatísticas
-│   │   │   ├── Chart/           # Gráfico Bitcoin (Chart.js)
-│   │   │   ├── ExecutiveSummary/ # Resumo executivo
-│   │   │   ├── RecommendationCards/ # Recomendações
-│   │   │   └── Footer/          # Rodapé
+│   │   │   ├── Header/          # Menu (TopHeader) e destaque inicial (MainHeader)
+│   │   │   ├── TickerBar/       # Faixa de cotações ao vivo
+│   │   │   ├── HeroStats/       # Medo & Ganância, dominância, capitalização, volume
+│   │   │   ├── ExecutiveSummary/ # Resumo gerado com dados reais
+│   │   │   ├── Chart/           # Gráfico (Chart.js) + análise técnica
+│   │   │   ├── RecommendationCards/ # Sinais calculados pelos indicadores
+│   │   │   ├── News/            # Aba "Notícias relevantes" e widget
+│   │   │   ├── Login/           # Tela de login (layout compartilhado)
+│   │   │   ├── Register/        # Tela de cadastro
+│   │   │   ├── Painel/          # Tela principal após entrar
+│   │   │   ├── CryptoSearch/    # Busca e tabela de preços
+│   │   │   ├── Converter/       # Conversor cripto x BRL/USD
+│   │   │   └── ...              # Ícones, Sparkline, LivePrice, Layout, Footer
+│   │   ├── context/             # Sessão (AuthContext) e moeda (PreferencesContext)
+│   │   ├── hooks/               # useAsync, useLivePrices, useMarketAnalysis...
 │   │   ├── services/
-│   │   │   └── api.js           # Cliente HTTP (Axios)
-│   │   ├── utils/
-│   │   │   └── formatters.js    # Funções de formatação
-│   │   ├── styles/
-│   │   │   └── global.css       # Estilos globais
-│   │   ├── App.jsx              # Componente principal
+│   │   │   ├── api.js           # Backend com fallback para APIs públicas
+│   │   │   ├── auth.js          # Cadastro/login (backend ou navegador)
+│   │   │   └── liveTicker.js    # WebSocket da Binance compartilhado
+│   │   ├── utils/               # Formatadores, indicadores técnicos, moedas
+│   │   ├── styles/global.css    # Tokens de design e estilos globais
+│   │   ├── App.jsx              # Rotas (carregamento sob demanda)
 │   │   └── main.jsx             # Entry point
 │   ├── package.json
 │   ├── vite.config.js
@@ -195,6 +217,23 @@ Abra seu navegador em: **http://localhost:3000**
 
 ### Base URL: `http://localhost:5000/api`
 
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/bitcoin/health` | Status da API |
+| GET | `/bitcoin/price` | Preço atual do Bitcoin |
+| GET | `/bitcoin/history?period=7&symbol=BTCUSDT` | Histórico (1, 7, 30, 90, 365, max) de qualquer par |
+| GET | `/bitcoin/stats` | Preço + Medo & Ganância + dominância + capitalização |
+| GET | `/market/tickers?symbols=BTCUSDT,ETHUSDT` | Cotação 24h de vários pares |
+| GET | `/market/global` | Capitalização total, volume e dominância |
+| GET | `/market/fear-greed` | Índice de Medo & Ganância (30 dias) |
+| GET | `/market/coins` | Top 100 criptomoedas |
+| GET | `/market/search?q=solana` | Busca de criptomoedas com preço |
+| GET | `/market/chart/:id?period=7` | Histórico pela CoinGecko |
+| GET | `/news` | Notícias relevantes (09:00 e 18:00) |
+| POST | `/auth/register` | Criar conta |
+| POST | `/auth/login` | Entrar |
+| GET | `/auth/me` | Usuário logado (Bearer token) |
+
 #### 1. Health Check
 ```http
 GET /api/bitcoin/health
@@ -282,37 +321,97 @@ GET /api/bitcoin/stats
 
 ## 🎨 Componentes React
 
-### TopHeader
-- Navegação principal sticky
-- Ticker de preços em tempo real
-- Se esconde ao fazer scroll down
-- Atualiza preço a cada 30 segundos
+### Rotas
+| Rota | Tela | Acesso |
+|------|------|--------|
+| `/` | Dashboard com análise do Bitcoin | Público |
+| `/noticias` | Notícias relevantes | Público |
+| `/login` | Entrar | Público |
+| `/cadastro` | Criar conta | Público |
+| `/app` | Meu Painel (gráfico, busca de preços, favoritas, conversor) | Logado |
+
+### TopHeader + TickerBar
+- Menu com abas, seletor de moeda (US$ / R$), sino com notícias novas e menu da conta
+- Faixa de cotações ao vivo via WebSocket da Binance
+- Se esconde ao rolar para baixo (listener passivo + requestAnimationFrame)
+- Menu lateral no celular
 
 ### MainHeader
-- Logo e título da aplicação
-- Data formatada automaticamente
+- Título, data do relatório e preço do BTC ao vivo com mini gráfico de 24h
 
 ### HeroStats
-- 3 cards com estatísticas principais
-- Animação de entrada com Intersection Observer
-- Hover effects
+- Índice de Medo & Ganância, dominância do BTC, capitalização total e volume global (dados reais)
 
 ### ExecutiveSummary
-- Resumo executivo do mercado
-- Destaque para pontos de atenção
+- Texto gerado a partir dos dados reais: variação 24h/7d/30d/ano, médias móveis, RSI, mercado global e destaque do dia
 
 ### BitcoinChart
-- Gráfico interativo com Chart.js
-- Seleção de períodos (7D, 30D, 90D, 1A, MÁX)
-- Loading state e error handling
-- Tooltip formatado com valores em USD
+- Gráfico com períodos 24H, 7D, 30D, 90D, 1A e MÁX
+- Médias móveis MM20 e MM50 opcionais
+- Último ponto atualizado em tempo real
+- Suporte, resistência, MM50, MM200, RSI e volatilidade calculados dos candles diários
+- Reutilizado no Painel para qualquer moeda (fallback para CoinGecko quando não há par na Binance)
 
 ### RecommendationCards
-- Recomendações para investidores
-- Aviso legal destacado
+- Sinal educativo calculado pela tendência (MM200), RSI e Medo & Ganância, com os motivos exibidos
 
-### Footer
-- Informações legais e direitos autorais
+### NewsPage (aba Notícias relevantes)
+- Destaque + grade de notícias, filtros por categoria e origem, busca e ordenação
+- Mostra horário da última e da próxima atualização (09:00 e 18:00)
+
+### Painel (após login)
+- KPIs do mercado, gráfico da moeda selecionada, busca com atalho `/`, tabela ordenável com preços ao vivo, favoritas por usuário, conversor e últimas notícias
+
+### Login e Register
+- Validação em tempo real, força da senha, mostrar/ocultar senha
+- Redireciona para o Painel após entrar
+
+---
+
+## 📰 Rotina de Notícias Relevantes
+
+As notícias são coletadas de feeds RSS (Cointelegraph Brasil, Portal do Bitcoin, Livecoins, InfoMoney,
+CriptoFácil, CoinDesk e Decrypt), classificadas por categoria, pontuadas por relevância (palavras-chave +
+recência + quantidade de portais que repercutiram) e deduplicadas.
+
+A atualização acontece **todos os dias às 09:00 e 18:00 (horário de Brasília)** em dois lugares:
+
+1. **Backend (servidor rodando)**: `node-cron` com `timezone: America/Sao_Paulo` (`src/jobs/newsJob.js`).
+   Se o servidor ficou desligado no horário, a coleta roda ao iniciar. O resultado fica em `backend/data/news.json`
+   e é servido em `GET /api/news`.
+2. **GitHub Actions (site publicado)**: `.github/workflows/deploy.yml` roda às 12:00 e 21:00 UTC
+   (09:00 e 18:00 em Brasília), gera `data/news.json` e publica o site novamente.
+   O GitHub pode atrasar execuções agendadas em alguns minutos.
+
+Para rodar a coleta manualmente: `cd backend && npm run news:update`.
+
+---
+
+## 🔑 Autenticação
+
+- `POST /api/auth/register` → `{ name, email, password }` (senha com 8+ caracteres, letras e números)
+- `POST /api/auth/login` → `{ email, password }`
+- `GET /api/auth/me` → header `Authorization: Bearer <token>`
+
+Senhas com **bcrypt**, sessão com **JWT** (`JWT_SECRET`, validade `JWT_EXPIRES_IN`). Os usuários ficam no
+PostgreSQL quando conectado (tabela `users` criada automaticamente) ou em `backend/data/users.json`.
+Rotas de autenticação têm limite de 30 tentativas a cada 15 minutos.
+
+No site estático (GitHub Pages, sem servidor) o cadastro funciona em **modo demonstração**: a conta fica
+salva apenas no navegador, com a senha protegida por PBKDF2.
+
+---
+
+## 🌐 Deploy no GitHub Pages
+
+O workflow `.github/workflows/deploy.yml` gera o frontend em modo estático (`npm run build:static`), no qual
+o navegador consulta diretamente Binance, CoinGecko e Alternative.me, e publica em
+`https://enzorrener.github.io/bitcoin-analysis-site/`.
+
+Configuração única: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+Pushes em outras branches apenas validam o build; a publicação acontece na branch `main`,
+no agendamento das notícias e pelo botão *Run workflow*.
 
 ---
 
@@ -320,27 +419,26 @@ GET /api/bitcoin/stats
 
 ### ✅ Implementadas
 - [x] Backend API com Express.js
-- [x] Integração com Binance API
-- [x] Cache de requisições (30s para preços, 5min para histórico)
-- [x] Frontend React.js com componentes modulares
-- [x] Gráficos interativos com Chart.js
-- [x] Sistema de atualização em tempo real
-- [x] Design responsivo
-- [x] Rate limiting e segurança (Helmet)
-- [x] CORS configurado
-- [x] Error handling robusto
+- [x] Integração com Binance API (cotações de vários pares em uma única requisição)
+- [x] Dados de mercado reais: CoinGecko (capitalização, dominância, top 100) e Alternative.me (Medo & Ganância)
+- [x] Preços em tempo real via WebSocket da Binance (com fallback para consulta periódica)
+- [x] Aba "Notícias relevantes" com rotina às 09:00 e 18:00 (Brasília)
+- [x] Cadastro, login e tela principal protegida (JWT + bcrypt)
+- [x] Busca de preços de criptomoedas, favoritas e conversor BRL/USD
+- [x] Indicadores técnicos (MM20, MM50, MM200, RSI, suporte/resistência, volatilidade)
+- [x] Exibição em US$ ou R$
+- [x] Cache de requisições no backend e no frontend
+- [x] Carregamento sob demanda das páginas e do Chart.js
+- [x] Design responsivo com menu mobile
+- [x] Rate limiting, Helmet, compressão gzip e CORS
+- [x] Deploy automático no GitHub Pages
 
 ### 🚧 Planejadas (Próximas Implementações)
-- [ ] Conexão e uso efetivo do PostgreSQL
 - [ ] Armazenamento de histórico de preços no banco
-- [ ] Sistema de autenticação de usuários
 - [ ] Alertas de preço personalizados
-- [ ] Dashboard de usuário
-- [ ] Comparação com outras criptomoedas (ETH, BNB)
-- [ ] WebSockets para updates em tempo real
-- [ ] Análise técnica avançada (RSI, MACD, Bollinger Bands)
+- [ ] Favoritas sincronizadas no servidor
 - [ ] Exportação de relatórios em PDF
-- [ ] Modo escuro/claro
+- [ ] Modo claro
 
 ---
 
@@ -368,7 +466,7 @@ Benefícios:
 ### Medidas Implementadas
 1. **Helmet.js**: Headers de segurança HTTP
 2. **CORS**: Apenas frontend autorizado pode acessar
-3. **Rate Limiting**: 100 requisições por IP a cada 15 minutos
+3. **Rate Limiting**: 300 requisições por IP a cada 15 minutos (30 nas rotas de login/cadastro)
 4. **Validação de inputs**: Parâmetros verificados nos controllers
 5. **Error handling**: Erros não expõem detalhes internos em produção
 
@@ -381,7 +479,11 @@ DB_PORT=5432
 DB_NAME=bitcoin_analysis
 DB_USER=postgres
 DB_PASSWORD=sua_senha_aqui
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3000,http://localhost:4173
+JWT_SECRET=uma_chave_longa_e_aleatoria
+JWT_EXPIRES_IN=7d
+NEWS_JOB_ENABLED=true
+COINGECKO_API_KEY=            # opcional
 ```
 
 ⚠️ **IMPORTANTE**: Nunca commite o arquivo `.env` no Git!
@@ -392,15 +494,17 @@ FRONTEND_URL=http://localhost:3000
 
 ### Backend
 ```bash
-npm start       # Inicia servidor em produção
-npm run dev     # Inicia com nodemon (auto-reload)
+npm start            # Inicia servidor em produção
+npm run dev          # Inicia com nodemon (auto-reload)
+npm run news:update  # Coleta as notícias relevantes agora
 ```
 
 ### Frontend
 ```bash
-npm run dev     # Inicia Vite dev server
-npm run build   # Build para produção
-npm run preview # Preview do build
+npm run dev          # Inicia Vite dev server
+npm run build        # Build para produção (usa o backend em /api)
+npm run build:static # Build para GitHub Pages (sem backend)
+npm run preview      # Preview do build
 ```
 
 ---

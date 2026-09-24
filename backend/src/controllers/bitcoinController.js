@@ -1,4 +1,5 @@
 import * as binanceService from '../services/binanceService.js';
+import * as marketService from '../services/marketService.js';
 
 /**
  * Controller: Retorna preço atual do Bitcoin
@@ -25,6 +26,11 @@ export const getCurrentPrice = async (req, res) => {
 export const getPriceHistory = async (req, res) => {
   try {
     const { period = '7' } = req.query;
+    const symbol = String(req.query.symbol || 'BTCUSDT').toUpperCase();
+
+    if (!binanceService.isValidSymbol(symbol)) {
+      return res.status(400).json({ success: false, message: 'Símbolo inválido' });
+    }
 
     let days = parseInt(period);
     if (period === 'max') {
@@ -32,11 +38,13 @@ export const getPriceHistory = async (req, res) => {
     }
 
     const config = binanceService.getIntervalConfig(days);
-    const data = await binanceService.getPriceHistory(config.interval, config.limit);
+    const data = await binanceService.getPriceHistory(config.interval, config.limit, symbol);
 
     res.json({
       success: true,
       period: period,
+      symbol: symbol,
+      interval: config.interval,
       dataPoints: data.length,
       data: data
     });
@@ -56,17 +64,23 @@ export const getMarketStats = async (req, res) => {
   try {
     const currentPrice = await binanceService.getCurrentPrice();
 
-    // Você pode adicionar mais dados aqui (de outras fontes, do banco, etc)
+    // Fontes complementares: se alguma falhar, o restante continua disponível
+    const [fearGreed, global] = await Promise.allSettled([
+      marketService.getFearGreed(30),
+      marketService.getGlobalMarket()
+    ]);
+
     const stats = {
       currentPrice: currentPrice.price,
       change24h: currentPrice.change24h,
       high24h: currentPrice.high24h,
       low24h: currentPrice.low24h,
       volume24h: currentPrice.volume24h,
-      // Dados estáticos por enquanto (podem vir do banco depois)
-      targetPrice2025: 140000,
-      resistance: 115000,
-      sentiment: 'Alta'
+      quoteVolume24h: currentPrice.quoteVolume24h,
+      fearGreed: fearGreed.status === 'fulfilled' ? fearGreed.value : null,
+      btcDominance: global.status === 'fulfilled' ? global.value.btcDominance : null,
+      totalMarketCap: global.status === 'fulfilled' ? global.value.totalMarketCap : null,
+      sentiment: fearGreed.status === 'fulfilled' ? fearGreed.value.classification : null
     };
 
     res.json({

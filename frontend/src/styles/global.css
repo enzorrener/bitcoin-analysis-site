@@ -1,24 +1,48 @@
 :root {
-  --primary: #f5f5f5;
-  --secondary: #a1a1a1;
+  /* Texto */
+  --primary: #e8ecf3;
+  --secondary: #8b95a7;
+  --muted: #5f6b80;
+
+  /* Marca */
   --accent: #f7931a;
   --accent-light: #ffb84d;
-  --border: #2a2a2a;
-  --bg: #0f0f0f;
-  --white: #1a1a1a;
-  --success: #22c55e;
-  --success-light: #16a34a;
-  --warning: #f59e0b;
-  --warning-light: #d97706;
-  --danger: #ef4444;
-  --danger-light: #dc2626;
+  --accent-soft: rgba(247, 147, 26, 0.12);
+
+  /* Superfícies */
+  --bg: #0b0e14;
+  --white: #121722;          /* superfície principal (nome mantido por compatibilidade) */
+  --surface: #121722;
+  --surface-2: #171d2a;
+  --surface-3: #1f2636;
+  --border: #242c3b;
+  --border-strong: #313a4d;
+
+  /* Estados */
+  --success: #16c784;
+  --success-light: #0fa56b;
+  --success-soft: rgba(22, 199, 132, 0.12);
+  --warning: #f5a524;
+  --warning-light: #d98a0b;
+  --warning-soft: rgba(245, 165, 36, 0.12);
+  --danger: #ea3943;
+  --danger-light: #c92a33;
+  --danger-soft: rgba(234, 57, 67, 0.12);
   --info: #3b82f6;
   --info-light: #2563eb;
+
   --radius: 16px;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --radius-sm: 10px;
+  --radius-lg: 22px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
   --gradient-primary: linear-gradient(135deg, #f7931a 0%, #ffb84d 100%);
-  --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --gradient-bg: radial-gradient(1200px 600px at 10% -10%, rgba(247, 147, 26, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(59, 130, 246, 0.06), transparent 60%), #0b0e14;
+
+  --header-height: 64px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
 }
 
 * {
@@ -27,27 +51,206 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-padding-top: calc(var(--header-height) + 56px);
+}
+
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font);
   line-height: 1.6;
   color: var(--primary);
   background: var(--gradient-bg);
+  background-attachment: fixed;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
-  transition: all 0.4s ease;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
 }
 
+a {
+  color: inherit;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(247, 147, 26, 0.35);
+}
+
 .container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 0 32px;
+}
+
+/* Números com largura fixa evitam "pulos" quando o preço muda */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.positive {
+  color: var(--success);
+}
+
+.negative {
+  color: var(--danger);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Botões reutilizáveis */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: #1a1204;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--primary);
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Seletor segmentado (abas pequenas) */
+.segmented {
+  display: inline-flex;
+  padding: 4px;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.segmented button {
+  background: transparent;
+  border: none;
+  color: var(--secondary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.segmented button.active {
+  background: var(--surface-3);
+  color: var(--primary);
+}
+
+/* Pílulas de variação */
+.change-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.change-pill.positive {
+  background: var(--success-soft);
+}
+
+.change-pill.negative {
+  background: var(--danger-soft);
+}
+
+/* Esqueleto de carregamento */
+.skeleton {
+  display: inline-block;
+  min-width: 60px;
+  min-height: 1em;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* Destaque quando o preço muda em tempo real */
+.flash-up {
+  animation: flashUp 0.9s ease-out;
+}
+
+.flash-down {
+  animation: flashDown 0.9s ease-out;
+}
+
+@keyframes flashUp {
+  from { background-color: rgba(22, 199, 132, 0.28); }
+  to { background-color: transparent; }
+}
+
+@keyframes flashDown {
+  from { background-color: rgba(234, 57, 67, 0.28); }
+  to { background-color: transparent; }
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-50px);
+    transform: translateY(-16px);
   }
   to {
     opacity: 1;
@@ -58,7 +261,7 @@ body {
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(50px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -66,18 +269,60 @@ body {
   }
 }
 
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  animation: slideUp 0.8s ease-out forwards;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.fade-in:nth-child(2) { animation-delay: 0.1s; }
-.fade-in:nth-child(3) { animation-delay: 0.2s; }
-.fade-in:nth-child(4) { animation-delay: 0.3s; }
+.fade-in {
+  animation: slideUp 0.6s ease-out both;
+}
+
+.fade-in:nth-child(2) { animation-delay: 0.05s; }
+.fade-in:nth-child(3) { animation-delay: 0.1s; }
+.fade-in:nth-child(4) { animation-delay: 0.15s; }
+
+/* Carregamento de página (lazy) */
+.page-loader {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Seções abaixo da dobra só são renderizadas quando se aproximam da tela */
+.defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 @media (max-width: 968px) {
   .container {
     padding: 0 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
   }
 }

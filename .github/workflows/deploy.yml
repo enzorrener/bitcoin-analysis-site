@@ -1,0 +1,100 @@
+name: Site e rotina de notícias
+
+# Publica o site no GitHub Pages e atualiza a aba "Notícias relevantes"
+# todos os dias às 09:00 e 18:00 no horário de Brasília.
+
+on:
+  push:
+  schedule:
+    # Brasília = UTC-3 (sem horário de verão): 09:00 e 18:00 = 12:00 e 21:00 UTC
+    - cron: '0 12,21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Coletar notícias e gerar o site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Ler configuração do GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        continue-on-error: true
+
+      - name: Definir endereço do site
+        id: site
+        run: |
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          BASE_URL="${{ steps.pages.outputs.base_url }}"
+          BASE_PATH="${{ steps.pages.outputs.base_path }}"
+          if [ "${{ steps.pages.outcome }}" != "success" ]; then
+            BASE_URL="https://${OWNER,,}.github.io/${REPO}"
+            BASE_PATH="/${REPO}"
+          fi
+          echo "url=${BASE_URL}" >> "$GITHUB_OUTPUT"
+          echo "path=${BASE_PATH}/" >> "$GITHUB_OUTPUT"
+          echo "Site: ${BASE_URL} (base ${BASE_PATH}/)"
+
+      - name: Instalar dependências da coleta de notícias
+        working-directory: backend
+        run: npm install --omit=dev --no-audit --no-fund
+
+      - name: Coletar notícias relevantes
+        working-directory: backend
+        run: node src/scripts/updateNews.js --out ../frontend/public/data/news.json --fallback-url "${{ steps.site.outputs.url }}/data/news.json"
+
+      - name: Instalar dependências do frontend
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
+
+      - name: Gerar o site (modo estático)
+        working-directory: frontend
+        env:
+          VITE_BASE_PATH: ${{ steps.site.outputs.path }}
+        run: npm run build:static
+
+      - name: Enviar arquivos para o GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: Publicar no GitHub Pages
+    # Publica apenas a branch principal (pushes em outras branches só validam o build)
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # O GitHub pausa rotinas agendadas após 60 dias sem commits no repositório.
+      # Reativar o workflow pela API mantém a rotina de notícias funcionando.
+      - name: Manter a rotina agendada ativa
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy.yml/enable"
