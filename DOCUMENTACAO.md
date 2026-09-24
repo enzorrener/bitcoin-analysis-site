@@ -370,9 +370,11 @@ GET /api/bitcoin/stats
 
 ## 📰 Rotina de Notícias Relevantes
 
-As notícias são coletadas de feeds RSS (Cointelegraph Brasil, Portal do Bitcoin, Livecoins, InfoMoney,
-CriptoFácil, CoinDesk e Decrypt), classificadas por categoria, pontuadas por relevância (palavras-chave +
-recência + quantidade de portais que repercutiram) e deduplicadas.
+As notícias são coletadas de feeds RSS (Portal do Bitcoin, Livecoins, CriptoFácil, BeInCrypto Brasil,
+Cointelegraph Brasil, Money Times, CoinDesk e Decrypt), classificadas por categoria, pontuadas por relevância
+(palavras-chave + recência + quantidade de portais que repercutiram, com prioridade para portais em português)
+e deduplicadas. As fontes ficam em `NEWS_SOURCES` (`backend/src/services/newsService.js`) e aceitam endereços
+alternativos caso algum portal mude o link do feed.
 
 A atualização acontece **todos os dias às 09:00 e 18:00 (horário de Brasília)** em dois lugares:
 

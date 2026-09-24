@@ -27,19 +27,13 @@ export const NEWS_SOURCES = [
   { id: 'livecoins', name: 'Livecoins', urls: ['https://livecoins.com.br/feed/'], lang: 'pt' },
   { id: 'criptofacil', name: 'CriptoFácil', urls: ['https://www.criptofacil.com/feed/'], lang: 'pt' },
   { id: 'beincrypto-br', name: 'BeInCrypto Brasil', urls: ['https://br.beincrypto.com/feed/'], lang: 'pt' },
-  {
-    id: 'cointelegraph-br',
-    name: 'Cointelegraph Brasil',
-    urls: ['https://br.cointelegraph.com/rss', 'https://cointelegraph.com.br/rss', 'https://br.cointelegraph.com/feed'],
-    lang: 'pt'
-  },
+  { id: 'cointelegraph-br', name: 'Cointelegraph Brasil', urls: ['https://cointelegraph.com.br/rss', 'https://br.cointelegraph.com/rss'], lang: 'pt' },
   {
     id: 'money-times',
     name: 'Money Times',
     urls: ['https://www.moneytimes.com.br/criptomoedas/feed/', 'https://www.moneytimes.com.br/tag/criptomoedas/feed/'],
     lang: 'pt'
   },
-  { id: 'bitnoticias', name: 'BitNotícias', urls: ['https://bitnoticias.com.br/feed/'], lang: 'pt' },
   { id: 'coindesk', name: 'CoinDesk', urls: ['https://www.coindesk.com/arc/outboundfeeds/rss/'], lang: 'en' },
   { id: 'decrypt', name: 'Decrypt', urls: ['https://decrypt.co/feed'], lang: 'en' }
 ];
