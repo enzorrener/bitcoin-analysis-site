@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -12,10 +12,14 @@ import {
 import { usePreferences } from '../../context/PreferencesContext';
 import { useAsync } from '../../hooks/useAsync';
 import { useLivePrice } from '../../hooks/useLivePrices';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useMarketAnalysis } from '../../hooks/useMarketAnalysis';
 import { getCoinChart, getPriceHistory } from '../../services/api';
 import { formatCompactCurrency, formatCurrency, formatNumber, formatPercentage } from '../../utils/formatters';
 import { sma } from '../../utils/indicators';
+import { COIN_BY_PAIR } from '../../utils/coins';
+import CoinSelector from './CoinSelector';
+import { formatDuration, indexFromClientX, rangeComparePlugin } from './rangeCompare';
 import { RefreshIcon } from '../Icons/Icons';
 import { ChangePill } from '../LivePrice/LivePrice';
 import './BitcoinChart.css';
@@ -45,6 +49,19 @@ const formatLabel = (timestamp, period) => {
   return date.toLocaleString('pt-BR', { month: 'short', year: '2-digit' });
 };
 
+const formatPointDate = (timestamp, period) => {
+  const date = new Date(timestamp);
+  if (period === '1' || period === '7') {
+    return date.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  if (period === '30' || period === '90') {
+    return date.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit' });
+  }
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const CHART_PLUGINS = [rangeComparePlugin];
+
 const areaGradient = (context) => {
   const { chart } = context;
   const { ctx, chartArea } = chart;
@@ -58,11 +75,18 @@ const areaGradient = (context) => {
 /**
  * Texto e níveis técnicos exibidos abaixo do gráfico na página inicial
  */
-const TechnicalAnalysis = () => {
-  const { analysis } = useMarketAnalysis();
+const TechnicalAnalysis = ({ pair = 'BTCUSDT', name = 'Bitcoin' }) => {
+  const { analysis, loading } = useMarketAnalysis(pair);
   const { format } = usePreferences();
 
-  if (!analysis) return null;
+  if (!analysis) {
+    return loading ? (
+      <div className="content-card summary-skeleton" aria-busy="true">
+        <span className="skeleton" />
+        <span className="skeleton" />
+      </div>
+    ) : null;
+  }
 
   const levels = [
     { label: 'Suporte (mín. 30d)', value: format(analysis.support), hint: formatPercentage(analysis.distanceToSupport) },
@@ -79,6 +103,7 @@ const TechnicalAnalysis = () => {
 
   return (
     <div className="content-card">
+      <h3 className="analysis-title">Níveis técnicos • {name}</h3>
       <div className="levels-grid">
         {levels.map((level) => (
           <div className="level-item" key={level.label}>
@@ -108,8 +133,12 @@ const TechnicalAnalysis = () => {
  * @param {string} name - Nome exibido
  * @param {boolean} asSection - Exibe como seção numerada da página inicial
  */
-const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin', asSection = true, defaultPeriod = '7' }) => {
-  const [period, setPeriod] = useState(defaultPeriod);
+const PriceChart = ({ symbol, coinId, name, defaultPeriod = '7', onPeriodChange }) => {
+  const [period, setPeriodState] = useState(defaultPeriod);
+  const setPeriod = (next) => {
+    setPeriodState(next);
+    onPeriodChange?.(next);
+  };
   const [overlays, setOverlays] = useState({ sma20: false, sma50: false });
   const { currency, rate } = usePreferences();
   const live = useLivePrice(symbol);
@@ -147,6 +176,96 @@ const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin'
       change: ((last - first) / first) * 100
     };
   }, [candles]);
+
+  // ===== Comparação: segurar o botão esquerdo (ou o dedo) e arrastar =====
+  const chartRef = useRef(null);
+  const containerRef = useRef(null);
+  const frame = useRef(null);
+  const [measure, setMeasure] = useState(null); // { start, end, dragging }
+
+  useEffect(() => {
+    setMeasure(null);
+  }, [period, symbol]);
+
+  const comparison = useMemo(() => {
+    if (!measure || !candles || measure.start >= candles.length || measure.end >= candles.length) return null;
+    const i1 = Math.min(measure.start, measure.end);
+    const i2 = Math.max(measure.start, measure.end);
+    const from = candles[i1];
+    const to = candles[i2];
+    const slice = candles.slice(i1, i2 + 1);
+    return {
+      i1,
+      i2,
+      from: from.close,
+      to: to.close,
+      diff: to.close - from.close,
+      change: ((to.close - from.close) / from.close) * 100,
+      high: Math.max(...slice.map((c) => c.high)),
+      low: Math.min(...slice.map((c) => c.low)),
+      fromTime: from.timestamp,
+      toTime: to.timestamp
+    };
+  }, [measure, candles]);
+
+  // Repassa a seleção para o plugin desenhar no canvas
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    chart.$compare = measure && comparison ? { start: measure.start, end: measure.end, up: comparison.diff >= 0 } : null;
+    chart.draw();
+  }, [measure, comparison]);
+
+  const handlePointerDown = useCallback(
+    (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      const index = indexFromClientX(chartRef.current, event.clientX, candles?.length);
+      if (index == null) return;
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      setMeasure({ start: index, end: index, dragging: true });
+    },
+    [candles]
+  );
+
+  const handlePointerMove = useCallback(
+    (event) => {
+      if (!measure?.dragging) return;
+      const { clientX } = event;
+      cancelAnimationFrame(frame.current);
+      frame.current = requestAnimationFrame(() => {
+        const index = indexFromClientX(chartRef.current, clientX, candles?.length);
+        if (index != null) setMeasure((current) => (current && current.end !== index ? { ...current, end: index } : current));
+      });
+    },
+    [measure?.dragging, candles]
+  );
+
+  const handlePointerUp = useCallback(() => {
+    cancelAnimationFrame(frame.current);
+    // Clique simples (sem arrastar) limpa a comparação
+    setMeasure((current) => (!current || current.start === current.end ? null : { ...current, dragging: false }));
+  }, []);
+
+  useEffect(() => {
+    if (!measure) return undefined;
+    const onKey = (event) => event.key === 'Escape' && setMeasure(null);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [measure]);
+
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+
+  // Posição horizontal do quadro de comparação (centro da seleção, sem sair do gráfico)
+  const comparePosition = (() => {
+    const chart = chartRef.current;
+    const container = containerRef.current;
+    if (!comparison || !chart?.chartArea || !container) return null;
+    const x1 = chart.scales.x.getPixelForValue(comparison.i1);
+    const x2 = chart.scales.x.getPixelForValue(comparison.i2);
+    const half = 120;
+    const center = (x1 + x2) / 2;
+    return Math.min(Math.max(center, half), container.clientWidth - half);
+  })();
 
   const chartData = useMemo(() => {
     if (!candles) return null;
@@ -285,6 +404,7 @@ const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin'
             </label>
           ))}
         </div>
+        <span className="compare-hint">Segure e arraste no gráfico para comparar dois pontos</span>
         {stats && (
           <div className="chart-stats">
             <span>Máx <strong className="num">{toCurrency(stats.high)}</strong></span>
@@ -293,7 +413,48 @@ const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin'
         )}
       </div>
 
-      <div className="chart-container">
+      <div
+        className={`chart-container compare-area ${measure?.dragging ? 'dragging' : ''}`}
+        ref={containerRef}
+        onPointerDown={chartData ? handlePointerDown : undefined}
+        onPointerMove={chartData ? handlePointerMove : undefined}
+        onPointerUp={chartData ? handlePointerUp : undefined}
+        onPointerCancel={chartData ? handlePointerUp : undefined}
+      >
+        {comparison && comparePosition != null && (
+          <div
+            className={`compare-box ${comparison.i1 === comparison.i2 ? 'neutral' : comparison.diff >= 0 ? 'up' : 'down'}`}
+            style={{ left: comparePosition }}
+            role="status"
+            aria-live="polite"
+          >
+            {comparison.i1 === comparison.i2 ? (
+              <span className="compare-dates">Arraste para o lado para comparar</span>
+            ) : (
+              <>
+                <div className="compare-main">
+                  <strong className="num">{formatPercentage(comparison.change)}</strong>
+                  <span className="num">
+                    {comparison.diff >= 0 ? '+' : '−'}
+                    {formatCurrency(Math.abs(comparison.diff) * rate, currency)}
+                  </span>
+                </div>
+                <div className="compare-values num">
+                  {toCurrency(comparison.from)} → {toCurrency(comparison.to)}
+                </div>
+                <div className="compare-dates">
+                  {formatPointDate(comparison.fromTime, period)} → {formatPointDate(comparison.toTime, period)}
+                  <span> • {formatDuration(comparison.toTime - comparison.fromTime)}</span>
+                </div>
+                <div className="compare-range num">
+                  Máx {toCurrency(comparison.high)} • Mín {toCurrency(comparison.low)}
+                </div>
+                {!measure?.dragging && <div className="compare-clear">Clique no gráfico ou aperte Esc para limpar</div>}
+              </>
+            )}
+          </div>
+        )}
+
         {history.loading && !chartData && (
           <div className="chart-loading">
             <div className="loading-spinner" />
@@ -310,7 +471,16 @@ const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin'
           </div>
         )}
 
-        {chartData && <Line data={chartData} options={chartOptions} aria-label={`Gráfico de preço ${name}`} role="img" />}
+        {chartData && (
+          <Line
+            ref={chartRef}
+            data={chartData}
+            options={chartOptions}
+            plugins={CHART_PLUGINS}
+            aria-label={`Gráfico de preço ${name}`}
+            role="img"
+          />
+        )}
       </div>
 
       <p className="chart-description">
@@ -320,7 +490,27 @@ const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin'
     </div>
   );
 
-  if (!asSection) return chartCard;
+  return chartCard;
+};
+
+/**
+ * Gráfico de preços. Na página inicial (asSection) vira a seção "Análise Técnica Avançada",
+ * com filtro das principais moedas e níveis técnicos da moeda escolhida.
+ * @param {string} symbol - Par da Binance (ex: ETHUSDT)
+ * @param {string} coinId - Id na CoinGecko (fallback quando não há par na Binance)
+ * @param {string} name - Nome exibido
+ * @param {boolean} asSection - Exibe como seção numerada da página inicial
+ */
+const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin', asSection = true, defaultPeriod = '7' }) => {
+  const [selectedPair, setSelectedPair] = useLocalStorage('ba_analysis_pair', 'BTCUSDT');
+  // Mantém o período escolhido ao trocar de moeda
+  const [sectionPeriod, setSectionPeriod] = useState(defaultPeriod);
+
+  if (!asSection) {
+    return <PriceChart symbol={symbol} coinId={coinId} name={name} defaultPeriod={defaultPeriod} />;
+  }
+
+  const coin = COIN_BY_PAIR[selectedPair] || COIN_BY_PAIR.BTCUSDT;
 
   return (
     <section className="section fade-in" id="analise-tecnica">
@@ -328,8 +518,16 @@ const BitcoinChart = ({ symbol = 'BTCUSDT', coinId = 'bitcoin', name = 'Bitcoin'
         <div className="section-number">2</div>
         <h2>Análise Técnica Avançada</h2>
       </div>
-      {chartCard}
-      <TechnicalAnalysis />
+      <CoinSelector selectedPair={coin.pair} onSelect={(next) => setSelectedPair(next.pair)} />
+      <PriceChart
+        key={coin.pair}
+        symbol={coin.pair}
+        coinId={coin.id}
+        name={coin.name}
+        defaultPeriod={sectionPeriod}
+        onPeriodChange={setSectionPeriod}
+      />
+      <TechnicalAnalysis pair={coin.pair} name={coin.name} />
     </section>
   );
 };

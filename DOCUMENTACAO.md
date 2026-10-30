@@ -350,10 +350,15 @@ GET /api/bitcoin/stats
 - Texto gerado a partir dos dados reais: variação 24h/7d/30d/ano, médias móveis, RSI, mercado global e destaque do dia
 
 ### BitcoinChart
+- Filtro das principais moedas (BTC, ETH, SOL, XRP, BNB, DOGE, ADA, TRX, LINK, AVAX com variação 24h ao vivo)
+  e seletor "Outras moedas"; a escolha fica salva no navegador e o período é mantido ao trocar de moeda
+- Comparação entre dois pontos: segurar o botão esquerdo do mouse (ou o dedo) e arrastar mostra a variação
+  em % e em valor, os preços inicial e final, as datas, a duração e a máxima/mínima do intervalo
+  (verde quando subiu, vermelho quando caiu). Clique simples ou Esc limpa a seleção
 - Gráfico com períodos 24H, 7D, 30D, 90D, 1A e MÁX
 - Médias móveis MM20 e MM50 opcionais
 - Último ponto atualizado em tempo real
-- Suporte, resistência, MM50, MM200, RSI e volatilidade calculados dos candles diários
+- Suporte, resistência, MM50, MM200, RSI e volatilidade calculados dos candles diários da moeda escolhida
 - Reutilizado no Painel para qualquer moeda (fallback para CoinGecko quando não há par na Binance)
 
 ### RecommendationCards
