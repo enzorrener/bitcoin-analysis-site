@@ -255,3 +255,192 @@
     padding: 7px 9px;
   }
 }
+
+/* ===== Filtro de moedas da Análise Técnica ===== */
+
+.coin-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.coin-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+  padding: 2px;
+  /* Indica que há mais moedas ao rolar para o lado */
+  mask-image: linear-gradient(90deg, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+}
+
+.coin-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.coin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px 7px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+
+.coin-chip:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.coin-chip.active {
+  background: var(--accent-soft);
+  border-color: rgba(247, 147, 26, 0.6);
+  color: var(--accent);
+}
+
+.coin-chip-change {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.coin-other select {
+  appearance: none;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b95a7' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 32px 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.coin-other.active select {
+  border-color: rgba(247, 147, 26, 0.6);
+  color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.analysis-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+}
+
+/* ===== Comparação entre dois pontos ===== */
+
+.compare-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.compare-area {
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Arrastar na horizontal compara; na vertical continua rolando a página */
+  touch-action: pan-y;
+}
+
+.compare-area.dragging {
+  cursor: ew-resize;
+}
+
+.compare-box {
+  position: absolute;
+  top: 6px;
+  transform: translateX(-50%);
+  z-index: 2;
+  min-width: 230px;
+  max-width: 290px;
+  background: rgba(18, 23, 34, 0.96);
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--secondary);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  text-align: center;
+}
+
+.compare-box.up {
+  border-top-color: var(--success);
+}
+
+.compare-box.down {
+  border-top-color: var(--danger);
+}
+
+.compare-main {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.compare-main strong {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.compare-box.up .compare-main {
+  color: var(--success);
+}
+
+.compare-box.down .compare-main {
+  color: var(--danger);
+}
+
+.compare-main span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.compare-values {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.compare-dates,
+.compare-range {
+  font-size: 11.5px;
+  color: var(--secondary);
+  margin-top: 2px;
+}
+
+.compare-clear {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+@media (max-width: 768px) {
+  .compare-hint {
+    width: 100%;
+    order: 3;
+  }
+
+  .coin-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .coin-other select {
+    width: 100%;
+  }
+}

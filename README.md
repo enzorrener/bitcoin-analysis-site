@@ -128,7 +128,7 @@ curl http://localhost:5000/api/bitcoin/price
 - [x] Backend API RESTful
 - [x] Integração com Binance, CoinGecko e Alternative.me
 - [x] Preços em tempo real (WebSocket)
-- [x] Gráficos interativos com médias móveis
+- [x] Gráficos interativos com médias móveis, filtro de moedas e comparação entre dois pontos (clicar e arrastar)
 - [x] Aba "Notícias relevantes" com rotina às 09:00 e 18:00
 - [x] Sistema de autenticação (cadastro, login, JWT)
 - [x] Painel do usuário com busca de preços, favoritas e conversor
